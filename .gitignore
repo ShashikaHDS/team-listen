@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.vscode/
+outputs/
+runs/
+logs/
+wandb/
+*.pt
+*.zip
+*.usd
+*.onnx
