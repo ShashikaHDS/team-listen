@@ -2,6 +2,23 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-01 - Throughput gate PASS; training num_envs frozen at 8192
+
+Gate results (docs/GATE_RESULTS.md, be4e3a5): MAPPO training mode sustains
+136k/221k/298k/390k env-steps/s at 1024/2048/4096/8192 envs against the
+100k hard gate; peak VRAM 3.6 GiB; MAPPO+Discrete proven by a live run.
+DECISION: training num_envs frozen at 8192 (same as N_EVAL_ENVS); the M1
+program is ~15 GPU-hours. RATIFIED (a): assert_paired_lane_identity
+compares the float margins diagnostic with atol=1e-4 on CPU only (torch
+CPU GEMM routes batch-row positions through different microkernels; CUDA
+verified bitwise-clean; all integer fields bitwise everywhere) - leak
+detection teeth verified intact. RATIFIED (b): the base-cfg Blind default
+vs OBS_DIM test inconsistency fix (tests now arm-explicit over both
+widths). WATCH ITEM for the lambda/epsilon pilot: mean episode return
+drifted down (12.5 to -0.4) over the 50-iteration falsification window
+while value loss improved - expected at 2% of a run, but if the same
+shape appears at 30M+ steps, revisit the shaping/collision balance.
+
 ## 2026-08-31 - Language-cache projection: JL finding accepted, LDA-augmented projection to be stored in the artifact
 
 The 5090's 384d-vs-32d ridge probe on the committed lang cache (see
