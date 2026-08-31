@@ -1,0 +1,210 @@
+{
+  "constraints": {
+    "mapgen": {
+      "cluster_size_range": [
+        2,
+        6
+      ],
+      "min_cluster_distance": 3.0,
+      "num_clusters": 3
+    },
+    "plan_time_budget": 120,
+    "pr_corridor_lengths": [
+      3,
+      4,
+      5
+    ],
+    "pr_delta_max": 6,
+    "pr_spawn_mouth_min_dist": 3,
+    "rb_asymmetry_cap": 1,
+    "rb_mouth_min_col_sep": 5,
+    "rb_spawn_dist_window": [
+      4,
+      14
+    ]
+  },
+  "delta_gap_rule": "Precedence: d(r0, mouth) - d(r1, mouth) (spec 3.1); RoleBinding: signed matching-cost asymmetry (d(r0,left)+d(r1,right)) - (d(r0,right)+d(r1,left)), capped to +-1 per scenario (spec 2.1 [FIXED])",
+  "epsilon": 0.05,
+  "eval_frac": 0.125,
+  "fields": {
+    "delta_gap": {
+      "dtype": "torch.int8",
+      "shape": [
+        16384
+      ]
+    },
+    "dist_field": {
+      "dtype": "torch.int16",
+      "shape": [
+        16384,
+        3,
+        12,
+        12
+      ]
+    },
+    "instr_switch_time": {
+      "dtype": "torch.int16",
+      "shape": [
+        16384
+      ]
+    },
+    "leak_bit": {
+      "dtype": "torch.uint8",
+      "shape": [
+        16384
+      ]
+    },
+    "mouth": {
+      "dtype": "torch.int16",
+      "shape": [
+        16384,
+        2
+      ]
+    },
+    "occ": {
+      "dtype": "torch.uint8",
+      "shape": [
+        16384,
+        12,
+        12
+      ]
+    },
+    "slip": {
+      "dtype": "torch.uint8",
+      "shape": [
+        16384,
+        2,
+        128,
+        4
+      ]
+    },
+    "spawn": {
+      "dtype": "torch.int16",
+      "shape": [
+        16384,
+        4,
+        2
+      ]
+    },
+    "spawn_alt": {
+      "dtype": "torch.int16",
+      "shape": [
+        16384,
+        4,
+        2
+      ]
+    },
+    "split": {
+      "dtype": "torch.uint8",
+      "shape": [
+        16384
+      ]
+    },
+    "target": {
+      "dtype": "torch.int16",
+      "shape": [
+        16384,
+        3,
+        2
+      ]
+    },
+    "target_valid": {
+      "dtype": "torch.bool",
+      "shape": [
+        16384,
+        3
+      ]
+    }
+  },
+  "file": "scenario_bank_Precedence_0838c7c98df3.pt",
+  "k": 16384,
+  "leak_bit_rule": "RoleBinding: 0 iff min-cost matching sends robot_0 to the LEFT (smaller-column) station (RB0); Precedence: 0 iff delta_gap < 0 (robot_0 closer to the mouth, PR0); exact ties alternate with row parity",
+  "leaky": false,
+  "schema_version": 1,
+  "seed_info": {
+    "master_seed": 20260831,
+    "mode": "derived",
+    "rule": "sha256('team_listen_bank/<seed>/<row>')[:8] big-endian mod 2**63"
+  },
+  "sha256": "0838c7c98df38d3ba6c0c6eb1405ec87b6e1b15ac58be5535b43852d513e27f0",
+  "stats": {
+    "delta_gap_hist": {
+      "-1": 1261,
+      "-2": 1261,
+      "-3": 1260,
+      "-4": 1260,
+      "-5": 1260,
+      "-6": 1260,
+      "0": 1260,
+      "1": 1261,
+      "2": 1261,
+      "3": 1260,
+      "4": 1260,
+      "5": 1260,
+      "6": 1260
+    },
+    "delta_gap_x_leak_bit": {
+      "-1": {
+        "leak_bit_0": 1261,
+        "leak_bit_1": 0
+      },
+      "-2": {
+        "leak_bit_0": 1261,
+        "leak_bit_1": 0
+      },
+      "-3": {
+        "leak_bit_0": 1260,
+        "leak_bit_1": 0
+      },
+      "-4": {
+        "leak_bit_0": 1260,
+        "leak_bit_1": 0
+      },
+      "-5": {
+        "leak_bit_0": 1260,
+        "leak_bit_1": 0
+      },
+      "-6": {
+        "leak_bit_0": 1260,
+        "leak_bit_1": 0
+      },
+      "0": {
+        "leak_bit_0": 630,
+        "leak_bit_1": 630
+      },
+      "1": {
+        "leak_bit_0": 0,
+        "leak_bit_1": 1261
+      },
+      "2": {
+        "leak_bit_0": 0,
+        "leak_bit_1": 1261
+      },
+      "3": {
+        "leak_bit_0": 0,
+        "leak_bit_1": 1260
+      },
+      "4": {
+        "leak_bit_0": 0,
+        "leak_bit_1": 1260
+      },
+      "5": {
+        "leak_bit_0": 0,
+        "leak_bit_1": 1260
+      },
+      "6": {
+        "leak_bit_0": 0,
+        "leak_bit_1": 1260
+      }
+    },
+    "leak_bit_counts": {
+      "0": 8192,
+      "1": 8192
+    },
+    "n_eval": 2048,
+    "n_train": 14336,
+    "obstacle_density_mean": 0.17077551782131195,
+    "slip_rate_measured": 0.049931228160858154
+  },
+  "variant": "Precedence"
+}

@@ -43,7 +43,7 @@ if str(REPO_ROOT) not in sys.path:
 from tasks.team_listen import fleet_env
 from tasks.team_listen import grid_core
 from tasks.team_listen.fleet_env_cfg import TeamGridEnvCfg
-from tasks.team_listen.obs_layout import OBS_DIM, STATE_DIM
+from tasks.team_listen.obs_layout import FULL_STATE_OBS_DIM, OBS_DIM, STATE_DIM
 
 AGENTS = ("robot_0", "robot_1")                 # STABLE ORDER (spec 1.4)
 
@@ -80,6 +80,15 @@ def _base_cfg():
         return TeamGridEnvCfg()
     except Exception:
         return TeamGridEnvCfg
+
+
+def _arm_cfg(arm):
+    """Instantiate the cfg for a specific arm, or None on the dev-box shim
+    (where __post_init__ never runs and widths stay at the class attrs)."""
+    try:
+        return TeamGridEnvCfg(arm=arm)
+    except Exception:
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -122,19 +131,28 @@ def test_cfg_action_spaces_decode_to_discrete_5():
 
 
 def test_cfg_observation_and_state_specs_decode_to_flat_box():
-    """Int specs (OBS_DIM / positive STATE_DIM) decode to flat Boxes --
-    never Dict, never Discrete-inside-observation (spec 1.4/1.5)."""
+    """Int specs decode to flat Boxes -- never Dict, never Discrete-
+    inside-observation (spec 1.4/1.5).  Observation width is ARM-derived
+    (spec 4.1): partial-obs arms decode to OBS_DIM, full-state arms to
+    FULL_STATE_OBS_DIM.  [5090 fixture finding: the base cfg defaults to
+    arm="Blind" (full state), so asserting OBS_DIM on the bare base cfg
+    only ever passed on the dev box where the cfg cannot instantiate.]"""
     _need_spec_to_gym_space()
     import gymnasium as gym
 
-    cfg = _base_cfg()
-    for name in AGENTS:
-        space = spec_to_gym_space(cfg.observation_spaces[name])
-        assert isinstance(space, gym.spaces.Box)
-        assert tuple(space.shape) == (OBS_DIM,)
-    state = spec_to_gym_space(cfg.state_space)
-    assert isinstance(state, gym.spaces.Box)
-    assert tuple(state.shape) == (STATE_DIM,)
+    for arm, want in (("Lang", OBS_DIM), ("Blind", FULL_STATE_OBS_DIM)):
+        cfg = _arm_cfg(arm)
+        if cfg is None:                 # dev-box class-attr fallback
+            cfg, want = _base_cfg(), OBS_DIM
+        for name in AGENTS:
+            space = spec_to_gym_space(cfg.observation_spaces[name])
+            assert isinstance(space, gym.spaces.Box)
+            assert tuple(space.shape) == (want,), \
+                "arm %r: obs decoded to %r, want (%d,)" % (
+                    arm, tuple(space.shape), want)
+        state = spec_to_gym_space(cfg.state_space)
+        assert isinstance(state, gym.spaces.Box)
+        assert tuple(state.shape) == (STATE_DIM,)
 
 
 # ---------------------------------------------------------------------------
@@ -154,7 +172,10 @@ def test_cfg_action_space_spec_shape():
         assert isinstance(spec, set) and spec == {5} and len(spec) == 1, \
             "action_spaces[%r] must be the set {5}; got %r" % (name, spec)
     for name in AGENTS:
-        assert cfg.observation_spaces[name] == OBS_DIM
+        # Width is arm-derived (spec 4.1): the base cfg's default arm is
+        # "Blind" (full state) once instantiable, so accept either legal
+        # width but always require a plain positive int.
+        assert cfg.observation_spaces[name] in (OBS_DIM, FULL_STATE_OBS_DIM)
         assert isinstance(cfg.observation_spaces[name], int)
     assert cfg.state_space == STATE_DIM and STATE_DIM > 0   # POSITIVE int
     assert cfg.action_noise_model is None                   # MUST stay None
