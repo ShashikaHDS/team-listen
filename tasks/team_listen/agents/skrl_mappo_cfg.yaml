@@ -1,0 +1,110 @@
+# =========================================================================
+# !!! PROVISIONAL FILE -- DO NOT START THE FIRST TRAINING RUN WITH IT !!!
+#
+# M1_SPEC section 0 / 1.14 PROCEDURE (blocking, machine-checked):
+#   Before first training on the 5090, RE-COPY this file VERBATIM from the
+#   PINNED Isaac Lab checkout:
+#     ~/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/direct/
+#         cart_double_pendulum/agents/skrl_mappo_cfg.yaml
+#   and then re-apply ONLY the deliberate deviations listed below.
+#   tests/test_yaml_keyset.py diffs this file's KEY SET against the pinned
+#   checkout's and must pass: identical keys, only values differ.
+#
+# WHY (spec 1.14 [FIXED: *_preprocessor_kwargs]): skrl's Runner._generate_agent
+#   injects preprocessor size/device via
+#     agent_cfg.get("<name>_preprocessor_kwargs", {}).update({...})
+#   On an ABSENT key .get returns a throwaway dict and the injection is
+#   silently discarded; only a key-present-but-null entry is rescued by
+#   _process_cfg. Every explicit `null` below is therefore load-bearing.
+#
+# DELIBERATE DEVIATIONS from the shipped cart_double_pendulum values
+# (re-apply these, and ONLY these, after the verbatim re-copy):
+#   * agent.entropy_loss_scale: 0.008   -- the shipped 0.0 collapses a
+#     deliberately symmetric 5-way Categorical to a fixed left/right
+#     convention early: the exact degeneracy the audit exists to detect.
+#   * agent.observation_preprocessor / agent.state_preprocessor: null
+#     (features are hand-normalised; RunningStandardScaler on the
+#     near-degenerate 32-d language slice amplifies numerical noise --
+#     spec OPEN(3)). value_preprocessor stays RunningStandardScaler: it
+#     acts on returns, never on observations.
+#   * agent.time_limit_bootstrap: true  -- is_finite_horizon = False
+#     truncation bootstrap (spec 1.4).
+#   * trainer.timesteps -- set by the section 8 training-FPS gate.
+#   * agent.discount_factor MUST stay equal to cfg.reward_gamma = 0.99
+#     (the gamma-correct potential shaping of spec 1.12 depends on it).
+#
+# NOT bugs, do NOT "fix" (spec 0 [FIXED: bogus renames]):
+#   * `lambda` is the correct key on skrl 1.4.x AND 2.x
+#     (Runner._check_cfg_compatibility maps it to gae_lambda).
+#   * the `models:` block is FLAT per-role on 2.x too
+#     (Runner._generate_models copies it per agent id).
+# =========================================================================
+
+seed: 42
+
+models:
+  separate: True
+  policy:
+    class: CategoricalMixin
+    unnormalized_log_prob: True
+    network:
+      - name: net
+        input: OBSERVATIONS
+        layers: [512, 256, 128]
+        activations: elu
+    output: ACTIONS
+  value:
+    class: DeterministicMixin
+    clip_actions: False
+    network:
+      - name: net
+        input: STATES
+        layers: [512, 256, 128]
+        activations: elu
+    output: ONE
+
+memory:
+  class: RandomMemory
+  memory_size: -1  # automatically determined (from the agent's rollouts)
+
+agent:
+  class: MAPPO
+  rollouts: 16
+  learning_epochs: 5
+  mini_batches: 4
+  discount_factor: 0.99
+  lambda: 0.95                       # correct on 1.4.x AND 2.x; Runner maps it to gae_lambda
+  random_timesteps: 0
+  learning_starts: 0
+  learning_rate: 3.0e-04
+  learning_rate_scheduler: KLAdaptiveLR
+  learning_rate_scheduler_kwargs:
+    kl_threshold: 0.008
+  observation_preprocessor: null
+  observation_preprocessor_kwargs: null
+  state_preprocessor: null
+  state_preprocessor_kwargs: null
+  value_preprocessor: RunningStandardScaler
+  value_preprocessor_kwargs: null
+  grad_norm_clip: 1.0
+  ratio_clip: 0.2
+  value_clip: 0.2
+  clip_predicted_values: True
+  entropy_loss_scale: 0.008          # NOT the 0.0 default (see header)
+  value_loss_scale: 2.0
+  kl_threshold: 0.0
+  rewards_shaper_scale: 1.0
+  time_limit_bootstrap: True
+  experiment:
+    directory: "runs"
+    experiment_name: ""
+    write_interval: auto
+    checkpoint_interval: auto
+
+trainer:
+  class: SequentialTrainer
+  # 150 M env steps at num_envs = 4096 (spec 4.2); RECOMPUTE when the
+  # section 8.2 sweep freezes num_envs, and respect the >=100k-FPS gate's
+  # documented reduction ladder if it binds.
+  timesteps: 36621
+  environment_info: log

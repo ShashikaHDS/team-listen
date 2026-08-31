@@ -9,3 +9,6 @@ wandb/
 *.zip
 *.usd
 *.onnx
+__pycache__/
+config/environment.lock.yaml
+data/
