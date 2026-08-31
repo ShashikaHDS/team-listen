@@ -68,8 +68,12 @@ Isaac Sim 5.1 standalone is already installed
 ```bash
 git clone https://github.com/isaac-sim/IsaacLab.git ~/IsaacLab
 cd ~/IsaacLab
+git checkout main   # the default release/3.0.0 branch requires Isaac Sim 6.x;
+                    # main (v2.3 line, verified at b0542fe2d) supports 5.1
 ln -s ~/isaac-sim-standalone-5.1.0-linux-x86_64 _isaac_sim
-./isaaclab.sh --install skrl
+env -u CONDA_PREFIX -u CONDA_DEFAULT_ENV -u VIRTUAL_ENV ./isaaclab.sh --install skrl
+# the env -u wrapper is REQUIRED on boxes where conda base auto-activates:
+# isaaclab.sh prefers $CONDA_PREFIX over _isaac_sim and installs into the wrong python
 ```
 
 Then clone this repo and see `docs/RESEARCH_PLAN.md`.
