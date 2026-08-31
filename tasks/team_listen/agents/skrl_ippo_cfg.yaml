@@ -131,8 +131,10 @@ agent:
 # https://skrl.readthedocs.io/en/latest/api/trainers/sequential.html
 trainer:
   class: SequentialTrainer
-  # 150 M env steps at num_envs = 4096 (spec 4.2); RECOMPUTE when the
-  # section 8.2 sweep freezes num_envs, and respect the >=100k-FPS gate's
-  # documented reduction ladder if it binds.
-  timesteps: 36621
+  # 150 M env steps (spec 4.2) at num_envs = 8192, frozen by the section
+  # 8.2 sweep (docs/GATE_RESULTS.md: training-FPS maximum, gate passed at
+  # 390k env-steps/s so no reduction ladder).  150e6 / 8192 = 18310.55;
+  # rounded DOWN to the nearest multiple of rollouts (16) so the run ends
+  # on an update boundary: 18304 * 8192 = 149,946,368 env steps (~149.9M).
+  timesteps: 18304
   environment_info: log
