@@ -2,7 +2,7 @@
 # COPIED per M1_SPEC 0 / 1.14 from the PINNED Isaac Lab checkout
 #   ~/IsaacLab @ b0542fe2d (main, 2026-07-24), Isaac Sim 5.1.0, skrl 2.1.0
 #   source/isaaclab_tasks/isaaclab_tasks/direct/cart_double_pendulum/
-#       agents/skrl_mappo_cfg.yaml
+#       agents/skrl_ippo_cfg.yaml
 # on 2026-08-31, key set preserved (agent/memory/trainer/seed identical;
 # models.policy keys necessarily differ: CategoricalMixin replaces the
 # example's GaussianMixin kwargs), values per the spec 1.14 block.
@@ -11,7 +11,7 @@
 #   Before first training on the 5090, RE-COPY this file VERBATIM from the
 #   PINNED Isaac Lab checkout:
 #     ~/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/direct/
-#         cart_double_pendulum/agents/skrl_mappo_cfg.yaml
+#         cart_double_pendulum/agents/skrl_ippo_cfg.yaml
 #   and then re-apply ONLY the deliberate deviations listed below.
 #   tests/test_yaml_keyset.py diffs this file's KEY SET against the pinned
 #   checkout's and must pass: identical keys, only values differ.
@@ -45,6 +45,15 @@
 #   * the `models:` block is FLAT per-role on 2.x too
 #     (Runner._generate_models copies it per agent id).
 # =========================================================================
+#
+# IPPO-SPECIFIC CHOICES (spec gives no ippo block; flagged for review):
+#   * models.separate: True and 512-256-128 nets, mirroring the MAPPO file
+#     (shipped example uses separate: False with 32-32); value input is
+#     OBSERVATIONS (IPPO has no central state).
+#   * state_preprocessor is null in the SHIPPED ippo yaml already; kept.
+#   * used on the partial-observation arms (Lang, SymbolPO, Mute) as the
+#     paired control (spec 1.14 [FIXED: vacuous MAPPO-vs-IPPO check]).
+#
 
 seed: 42
 
@@ -67,7 +76,7 @@ models:
     clip_actions: False
     network:
       - name: net
-        input: STATES
+        input: OBSERVATIONS
         layers: [512, 256, 128]
         activations: elu
     output: ONE
@@ -80,10 +89,10 @@ memory:
   memory_size: -1  # automatically determined (same as agent:rollouts)
 
 
-# MAPPO agent configuration (field names are from MAPPO_DEFAULT_CONFIG)
-# https://skrl.readthedocs.io/en/latest/api/multi_agents/mappo.html
+# IPPO agent configuration (field names are from IPPO_DEFAULT_CONFIG)
+# https://skrl.readthedocs.io/en/latest/api/multi_agents/ippo.html
 agent:
-  class: MAPPO
+  class: IPPO
   rollouts: 16
   learning_epochs: 5
   mini_batches: 4
