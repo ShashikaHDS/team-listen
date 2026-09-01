@@ -61,6 +61,15 @@ parser.add_argument("--shaping-lambda", type=float, default=None,
                     help="override cfg.shaping_lambda (OPEN(5) pilot cells)")
 parser.add_argument("--max-lr", type=float, default=5.0e-4, dest="max_lr",
                     help="ceiling used by --mitigation lr_ceiling")
+parser.add_argument("--checkpoint", default=None,
+                    help="skrl checkpoint to load before training (curriculum "
+                         "phase continuation; restores model/optimizer/"
+                         "preprocessor state — the KLAdaptiveLR scheduler "
+                         "object itself restarts fresh, LR carries via the "
+                         "optimizer)")
+parser.add_argument("--save-final", default=None, dest="save_final",
+                    help="path to save the final agent state after run() "
+                         "(the next curriculum phase's --checkpoint)")
 
 from isaaclab.app import AppLauncher  # noqa: E402
 
@@ -211,10 +220,17 @@ print("DIAG_START task=%s seed=%d mitigation=%s timesteps=%s cuda_blocking=%s"
          agent_cfg["trainer"]["timesteps"],
          __import__("os").environ.get("CUDA_LAUNCH_BLOCKING", "unset")),
       flush=True)
+if args.checkpoint:
+    runner.agent.load(args.checkpoint)
+    print("DIAG_LOADED %s" % args.checkpoint, flush=True)
 t0 = time.time()
 try:
     runner.run()
     print("DIAG_COMPLETE wall_s=%.0f" % (time.time() - t0), flush=True)
+    if args.save_final:
+        Path(args.save_final).parent.mkdir(parents=True, exist_ok=True)
+        runner.agent.save(args.save_final)
+        print("DIAG_SAVED %s" % args.save_final, flush=True)
 finally:
     sys.stdout.flush()
     sys.stderr.flush()
