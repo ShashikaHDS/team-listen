@@ -47,9 +47,20 @@ parser.add_argument("--mitigation", choices=("none", "lr_ceiling", "obs_scaler")
 parser.add_argument("--logit_sample", type=int, default=16384,
                     help="stored observations to sweep for finite logits")
 parser.add_argument("--no-tripwire", action="store_true", dest="no_tripwire",
-                    help="skip the finiteness wrapper entirely (control runs "
-                         "and mitigation probes: the tripwire's per-update "
-                         "syncs SUPPRESS the crash, see CRASH_DIAGNOSIS.md)")
+                    help="skip the finiteness wrapper entirely. NOTE: the "
+                         "tripwire's logit sweep calls model.act(), which "
+                         "SAMPLES and consumes global RNG, deterministically "
+                         "diverting the trajectory (CRASH_DIAGNOSIS.md) — "
+                         "campaign/pilot runs must not use it")
+parser.add_argument("--weight-check", action="store_true", dest="weight_check",
+                    help="RNG-free post-update parameter-finiteness assert "
+                         "(ratified for campaign runs, DECISIONS.md): reads "
+                         "model parameters only, perturbs nothing")
+parser.add_argument("--shaping-lambda", type=float, default=None,
+                    dest="shaping_lambda",
+                    help="override cfg.shaping_lambda (OPEN(5) pilot cells)")
+parser.add_argument("--max-lr", type=float, default=5.0e-4, dest="max_lr",
+                    help="ceiling used by --mitigation lr_ceiling")
 
 from isaaclab.app import AppLauncher  # noqa: E402
 
@@ -70,6 +81,8 @@ DIAG_DIR.mkdir(parents=True, exist_ok=True)
 
 env_cfg = load_cfg_from_registry(args.task, "env_cfg_entry_point")
 env_cfg.scene.num_envs = args.num_envs
+if args.shaping_lambda is not None:
+    env_cfg.shaping_lambda = float(args.shaping_lambda)
 env = gym.make(args.task, cfg=env_cfg).unwrapped
 assert not env.sim.has_gui() and not env.sim.has_rtx_sensors()
 
@@ -80,7 +93,7 @@ if args.timesteps is not None:
 agent_cfg["trainer"]["close_environment_at_exit"] = False
 if args.mitigation == "lr_ceiling":
     agent_cfg["agent"].setdefault("learning_rate_scheduler_kwargs", {})
-    agent_cfg["agent"]["learning_rate_scheduler_kwargs"]["max_lr"] = 5.0e-4
+    agent_cfg["agent"]["learning_rate_scheduler_kwargs"]["max_lr"] = args.max_lr
 elif args.mitigation == "obs_scaler":
     agent_cfg["agent"]["observation_preprocessor"] = "RunningStandardScaler"
     agent_cfg["agent"]["observation_preprocessor_kwargs"] = None
@@ -169,8 +182,30 @@ def guarded_update(*, timestep, timesteps, uid):
     return result
 
 
+def weight_checked_update(*, timestep, timesteps, uid):
+    result = orig_update(timestep=timestep, timesteps=timesteps, uid=uid)
+    for role, model in (("policy", agent.policies[uid]),
+                        ("value", agent.values[uid])):
+        for pname, p in model.named_parameters():
+            if not torch.isfinite(p).all():
+                out = DIAG_DIR / ("weighttrip_%s_s%d_t%d_%s.pt"
+                                  % (args.task.split("-")[2], args.seed,
+                                     timestep, uid))
+                torch.save({"timestep": timestep, "uid": uid, "role": role,
+                            "param": pname,
+                            "lr": agent.optimizers[uid].param_groups[0]["lr"],
+                            "n_nonfinite": int((~torch.isfinite(p)).sum()),
+                            "mitigation": args.mitigation}, out)
+                print("WEIGHT_TRIP t=%d uid=%s %s.%s -> %s"
+                      % (timestep, uid, role, pname, out), flush=True)
+                sys.exit(4)
+    return result
+
+
 if not args.no_tripwire:
     agent.update = guarded_update
+elif args.weight_check:
+    agent.update = weight_checked_update
 print("DIAG_START task=%s seed=%d mitigation=%s timesteps=%s cuda_blocking=%s"
       % (args.task, args.seed, args.mitigation,
          agent_cfg["trainer"]["timesteps"],
