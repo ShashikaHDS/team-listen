@@ -125,3 +125,40 @@ convention (11/11).
 
 Compliance remains unambiguously optimal for every agent under the amended
 reward. Probe results follow in Addendum 3.
+
+## Addendum 3: first-latch-bonus probe — STOP branch again
+
+3 seeds, RoleBinding Blind, λ=0.1, max_lr 1.5e-4, amended reward, full
+budget each. All three completed with no crash and no weight-trip — the
+1.5e-4 ceiling is now 4/4 across runs (vs 7/9 at 5e-4, 3/19 uncapped), so
+the stability story is closed as far as evidence at this scale can close it.
+
+| Seed | E[C] final | E[C] max (transient) | Final return | Wall |
+|---|---|---|---|---|
+| 0 | 0.3% | ~1.7% | 2.00 | 446 s |
+| 1 | 0.4% | ~2.8% | 2.04 | 449 s |
+| 2 | 0.5% | ~2.1% | 2.05 | 448 s |
+
+**Decision rule: "still ~1%" branch → STOPPED, no exploratory probe (as
+pre-agreed). The +2.0 first-latch bonus did not unlock completion.** The
+~+0.2 return shift vs the pre-amendment probe is consistent with policies
+harvesting occasional single latches, but the double-latch event remains
+effectively undiscovered, and the mid-run peak-then-fade shape persists at
+a stable optimum. The terminal-credit densification at the latch event was
+necessary-looking but is evidently not sufficient: the bottleneck now looks
+like the JOINT discovery problem (both agents must hold stations
+simultaneously within the horizon), which is curriculum territory.
+
+For the OPEN(8) joint design, two requests from the training side:
+1. Add a `single_latch_share` scalar to the env's extras log (fraction of
+   envs with exactly one latched robot) — the one diagnostic that
+   separates "agents rarely latch at all" from "agents latch singly but
+   the second never joins", and it is currently not logged.
+2. Candidate curriculum axes, cheapest first: spawn-to-station distance
+   window (bank builder already parameterises [4,14]); obstacle density /
+   cluster count; 12×12 grid held fixed. A bank-level curriculum (a
+   sequence of banks) preserves the frozen-scenario audit machinery
+   unchanged — nothing in _reset_idx needs to learn about curricula if
+   training just swaps TEAM_LISTEN_BANK between phases.
+
+GPU: probe 22 min; cumulative today ≈ 4.5 h.
