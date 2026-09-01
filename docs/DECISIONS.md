@@ -2,6 +2,34 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-01 - Lambda pilot verdict: two pathologies separated; terminal-credit fix is next
+
+Pilot (docs/PILOT_RESULTS.md): E[C] ~ 1% at every lambda in {0.05, 0.1,
+0.2} (no differentiation); scripted GreedyPolicy scores 0.999 on the same
+bank, so the task is valid and LEARNING is the sole blocker; policies
+learn approach-and-park (collect shaping credit, never discover the
+terminal latch payoff). The exploratory max_lr 1.5e-4 probe removed the
+optimisation instability entirely (stable positive returns, no crash)
+without changing competence, cleanly separating Pathology A (LR-driven
+instability) from Pathology B (terminal credit never discovered).
+
+RATIFIED: (1) max_lr lowered 5e-4 -> 1.5e-4 in both YAMLs (eliminates
+Pathology A in the probe; plausibly closes the residual lambda=0.05
+crash hazard). (2) lambda frozen at 0.1 (spec default; no cell
+differentiated). (3) epsilon=0.05 D_seed non-degeneracy CLOSED (77.7%
+trajectory divergence at zero competence cost). (4) NEXT RUNG, targeting
+Pathology B at the reward (most design-conservative of the pilot's
+options): add an instruction-free PER-AGENT FIRST-LATCH BONUS (+2, once
+per agent per episode) to bridge the last-mile credit gap between
+approach shaping and the terminal payoff; completion (+2) and outcome
+(+-10*Y) terms unchanged. Gates before any training: purity tests must
+stay green (the bonus reads latch state only, never instruction/
+assignment) and reward_audit's compliance bound must be recomputed and
+remain positive. Then a 3-seed probe at lambda=0.1; E[C] >= 0.9 triggers
+the campaign, failure escalates to OPEN(8) curriculum (easier maps).
+Spec amendment ledger: this modifies M1_SPEC's reward table; DECISIONS.md
+is the amendment record.
+
 ## 2026-09-01 - Crash fix ratified; binding constraint moves to learning
 
 Root cause named (docs/CRASH_DIAGNOSIS.md): KLAdaptiveLR growth produces
