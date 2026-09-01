@@ -106,6 +106,11 @@ MAPGEN_MIN_CLUSTER_DISTANCE = 3.0
 # RoleBinding (spec 2.1)
 RB_SPAWN_DIST_MIN = 4
 RB_SPAWN_DIST_MAX = 14
+#: Curriculum mode (DECISIONS 2026-09-01, OPEN(8)): when set to (lo, hi),
+#: RoleBinding spawns are filtered by NEAREST-station distance in [lo, hi]
+#: (each robot near a different station, anti-leak asymmetry cap skipped).
+#: Training-only banks; None leaves the certified generator untouched.
+RB_NEAR_WINDOW = None
 RB_ASYM_CAP = 1                     # per-station AND matching-cost asymmetry
 RB_MOUTH_MIN_COL_SEP = 5
 RB_LEFT_COL_MAX = C // 2 - 1        # 5: left-half columns [0, 5]
@@ -455,23 +460,42 @@ def _build_role_binding_row(row_seed, row_index, max_attempts):
 
         d_left = _bfs(grid, st_l, blocked=(st_r,))      # latch-aware fields
         d_right = _bfs(grid, st_r, blocked=(st_l,))
-        candidates = sorted(
-            (r, c) for r in range(R) for c in range(C)
-            if grid[r][c] == 0 and (r, c) not in (st_l, st_r)
-            and RB_SPAWN_DIST_MIN <= d_left[r][c] <= RB_SPAWN_DIST_MAX
-            and RB_SPAWN_DIST_MIN <= d_right[r][c] <= RB_SPAWN_DIST_MAX)
+        if RB_NEAR_WINDOW is None:
+            candidates = sorted(
+                (r, c) for r in range(R) for c in range(C)
+                if grid[r][c] == 0 and (r, c) not in (st_l, st_r)
+                and RB_SPAWN_DIST_MIN <= d_left[r][c] <= RB_SPAWN_DIST_MAX
+                and RB_SPAWN_DIST_MIN <= d_right[r][c] <= RB_SPAWN_DIST_MAX)
+        else:
+            lo, hi = RB_NEAR_WINDOW
+            candidates = sorted(
+                (r, c) for r in range(R) for c in range(C)
+                if grid[r][c] == 0 and (r, c) not in (st_l, st_r)
+                and lo <= min(d_left[r][c], d_right[r][c]) <= hi
+                and 0 <= max(d_left[r][c], d_right[r][c]) <= RB_SPAWN_DIST_MAX
+                and d_left[r][c] != d_right[r][c])
         if len(candidates) < 2:
             continue
 
         for _ in range(300):
             r0 = rng.choice(candidates)
             dl0, dr0 = d_left[r0[0]][r0[1]], d_right[r0[0]][r0[1]]
-            pool = [c for c in candidates if c != r0
-                    and abs(d_left[c[0]][c[1]] - dl0) <= RB_ASYM_CAP
-                    and abs(d_right[c[0]][c[1]] - dr0) <= RB_ASYM_CAP]
-            pool = [c for c in pool
-                    if abs((dl0 + d_right[c[0]][c[1]])
-                           - (dr0 + d_left[c[0]][c[1]])) <= RB_ASYM_CAP]
+            if RB_NEAR_WINDOW is None:
+                pool = [c for c in candidates if c != r0
+                        and abs(d_left[c[0]][c[1]] - dl0) <= RB_ASYM_CAP
+                        and abs(d_right[c[0]][c[1]] - dr0) <= RB_ASYM_CAP]
+                pool = [c for c in pool
+                        if abs((dl0 + d_right[c[0]][c[1]])
+                               - (dr0 + d_left[c[0]][c[1]])) <= RB_ASYM_CAP]
+            else:
+                # curriculum: the two robots spawn nearest DIFFERENT
+                # stations so a double latch is locally discoverable;
+                # anti-leak symmetry machinery is irrelevant for
+                # training-only banks and is skipped.
+                r0_near_left = dl0 < dr0
+                pool = [c for c in candidates if c != r0
+                        and (d_left[c[0]][c[1]] < d_right[c[0]][c[1]])
+                        != r0_near_left]
             if not pool:
                 continue
             r1 = rng.choice(pool)
@@ -888,14 +912,16 @@ def bank_stats(payload):
     }
 
 
-def save_bank(payload, out_dir, seed_info):
-    """Write ``scenario_bank_{variant}_{sha12}.pt`` (spec 1.10 naming) and
-    the stable-named JSON manifest ``scenario_bank_{variant}.json``.
+def save_bank(payload, out_dir, seed_info, tag=""):
+    """Write ``scenario_bank_{variant}[_{tag}]_{sha12}.pt`` (spec 1.10
+    naming, tag added for curriculum phase banks per DECISIONS 2026-09-01)
+    and the stable-named manifest ``scenario_bank_{variant}[_{tag}].json``.
     Returns (pt_path, manifest_path, sha256)."""
     os.makedirs(out_dir, exist_ok=True)
     data, sha = serialize_bank(payload)
     variant = payload["variant"]
-    pt_name = "scenario_bank_%s_%s.pt" % (variant, sha[:12])
+    suffix = ("_" + tag) if tag else ""
+    pt_name = "scenario_bank_%s%s_%s.pt" % (variant, suffix, sha[:12])
     pt_path = os.path.join(out_dir, pt_name)
     with open(pt_path, "wb") as f:
         f.write(data)
@@ -920,6 +946,8 @@ def save_bank(payload, out_dir, seed_info):
                        "cluster_size_range": list(MAPGEN_CLUSTER_SIZE_RANGE),
                        "min_cluster_distance": MAPGEN_MIN_CLUSTER_DISTANCE},
             "rb_spawn_dist_window": [RB_SPAWN_DIST_MIN, RB_SPAWN_DIST_MAX],
+            "rb_near_window": (list(RB_NEAR_WINDOW)
+                               if RB_NEAR_WINDOW is not None else None),
             "rb_asymmetry_cap": RB_ASYM_CAP,
             "rb_mouth_min_col_sep": RB_MOUTH_MIN_COL_SEP,
             "pr_corridor_lengths": list(PR_CORRIDOR_LENGTHS),
@@ -929,8 +957,9 @@ def save_bank(payload, out_dir, seed_info):
         },
         "stats": bank_stats(payload),
     }
+    manifest["tag"] = tag
     manifest_path = os.path.join(out_dir,
-                                 "scenario_bank_%s.json" % variant)
+                                 "scenario_bank_%s%s.json" % (variant, suffix))
     with open(manifest_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(manifest, f, indent=2, sort_keys=True)
         f.write("\n")
@@ -949,6 +978,7 @@ BANK_TENSOR_KEYS = (
 # ---------------------------------------------------------------------------
 
 def main(argv=None):
+    global RB_SPAWN_DIST_MIN, RB_SPAWN_DIST_MAX
     ap = argparse.ArgumentParser(
         description="Offline scenario-bank builder (M1_SPEC 1.10/2.1/3.1). "
                     "Deterministic from an explicit seed list; run it, "
@@ -970,8 +1000,40 @@ def main(argv=None):
     ap.add_argument("--eval-frac", type=float, default=DEFAULT_EVAL_FRAC)
     ap.add_argument("--out-dir", default=os.path.join(REPO_ROOT, "data"))
     ap.add_argument("--max-attempts", type=int, default=80)
+    ap.add_argument("--dist-min", type=int, default=RB_SPAWN_DIST_MIN,
+                    help="RoleBinding spawn-to-station min distance "
+                         "(curriculum phase banks override this)")
+    ap.add_argument("--dist-max", type=int, default=RB_SPAWN_DIST_MAX,
+                    help="RoleBinding spawn-to-station max distance")
+    ap.add_argument("--tag", default="",
+                    help="output-name tag, e.g. phase1; keeps curriculum "
+                         "banks from clobbering the certified bank")
+    ap.add_argument("--near-window", default="",
+                    help="curriculum mode LO,HI: RoleBinding spawns near "
+                         "different stations with nearest-station distance "
+                         "in [LO,HI]; requires --tag (training-only banks)")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
+
+    if args.dist_min > args.dist_max:
+        ap.error("--dist-min must be <= --dist-max")
+    RB_SPAWN_DIST_MIN = args.dist_min
+    RB_SPAWN_DIST_MAX = args.dist_max
+
+    global RB_NEAR_WINDOW
+    if args.near_window:
+        try:
+            lo, hi = (int(v) for v in args.near_window.split(","))
+        except ValueError:
+            ap.error("--near-window must be LO,HI integers")
+        if not (0 < lo <= hi):
+            ap.error("--near-window needs 0 < LO <= HI")
+        if not args.tag:
+            ap.error("--near-window requires --tag (curriculum banks must "
+                     "not clobber the certified bank)")
+        RB_NEAR_WINDOW = (lo, hi)
+    else:
+        RB_NEAR_WINDOW = None
 
     variants = VARIANTS if args.variant == "both" else (args.variant,)
     if args.seeds:
@@ -998,7 +1060,7 @@ def main(argv=None):
                              max_attempts=args.max_attempts,
                              verbose=not args.quiet)
         pt_path, manifest_path, sha = save_bank(payload, args.out_dir,
-                                                seed_info)
+                                                seed_info, tag=args.tag)
         if not args.quiet:
             stats = bank_stats(payload)
             print("  wrote %s" % pt_path)

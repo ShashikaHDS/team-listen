@@ -615,6 +615,10 @@ class TeamGridEnv(DirectMARLEnv):
         state_lang_l2 = self.lang_vec.reshape(self.num_envs, -1).norm(dim=-1).mean()
         log = self.extras.setdefault("log", {})
         log["completion_rate"] = done.float().mean()
+        # curriculum diagnostic (DECISIONS 2026-09-01): separates "agents
+        # rarely latch at all" from "one latches, the second never joins"
+        n_latched = (self.latched & self.agent_valid).sum(dim=1)
+        log["single_latch_share"] = (n_latched == 1).float().mean()
         log["outcome_correct_share"] = (done & y).float().mean()
         log["outcome_wrong_share"] = (done & ~y).float().mean()
         log["outcome_incomplete_share"] = (time_out & ~done).float().mean()

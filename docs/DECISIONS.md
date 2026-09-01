@@ -2,6 +2,28 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-01 - OPEN(8) curriculum design (response to the latch-bonus stop)
+
+The first-latch-bonus probe stopped per rule (E[C] 0.3-0.5%): agents
+harvest single latches but the JOINT double-latch event is effectively
+never discovered - a joint-exploration problem, not a credit-magnitude
+problem. DESIGN (implemented dev-side, tests green): a bank-level
+curriculum that leaves every audit surface untouched. Three
+TRAINING-ONLY RoleBinding banks (scripts/build_curriculum_banks.py,
+k=4096 each) with NEAREST-station spawn-distance windows [1,3] / [3,6] /
+[6,10], each robot spawning nearest a DIFFERENT station so accidental
+double latches are locally discoverable; phase 4 is the certified real
+bank unchanged. Curriculum mode is an explicit generator flag
+(--near-window, requires --tag) that skips the anti-leak symmetry
+machinery - acceptable because these banks are never evaluated on; the
+certified generator path is byte-identical when the flag is unset
+(regression-tested). Training schedule FIXED for reproducibility, not
+adaptive: 25M / 25M / 25M / 75M env steps with checkpoint continuation
+across bank swaps. New env diagnostic single_latch_share (fraction of
+envs with exactly one latched robot) separates "rarely latch" from
+"second never joins". Success criterion unchanged: E[C] >= 0.9 on the
+CERTIFIED bank at the end of phase 4.
+
 ## 2026-09-01 - Lambda pilot verdict: two pathologies separated; terminal-credit fix is next
 
 Pilot (docs/PILOT_RESULTS.md): E[C] ~ 1% at every lambda in {0.05, 0.1,
