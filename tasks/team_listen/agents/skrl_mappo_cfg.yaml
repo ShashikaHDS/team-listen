@@ -93,6 +93,9 @@ agent:
   learning_rate_scheduler: KLAdaptiveLR
   learning_rate_scheduler_kwargs:
     kl_threshold: 0.008
+    max_lr: 5.0e-4  # ratified cap (DECISIONS.md 2026-09-01): KLAdaptiveLR's default 1e-2 ceiling
+                    # let the LR climb until a minibatch step exploded the Categorical policy
+                    # (docs/CRASH_DIAGNOSIS.md); 5e-4 still allows 1.7x warm-up over base 3e-4
   observation_preprocessor: null
   observation_preprocessor_kwargs: null
   state_preprocessor: null
