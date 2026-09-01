@@ -162,3 +162,45 @@ For the OPEN(8) joint design, two requests from the training side:
    training just swaps TEAM_LISTEN_BANK between phases.
 
 GPU: probe 22 min; cumulative today ≈ 4.5 h.
+
+## Addendum 4: OPEN(8) curriculum probe — hypothesis confirmed, transfer fails
+
+3 seeds × 4 phases (25M/25M/25M/75M; checkpoint continuation across bank
+swaps; stamped banks phase1_7ecb4821 / phase2_51724dac / phase3_c6a9e8f1 —
+see the loader-stamp integration fix, f6efd34). All 12 phase runs clean.
+
+| Phase (near-window) | E[C] final (s0/s1/s2) | single_latch_share |
+|---|---|---|
+| 1 [1,3] | **0.688 / 0.695 / 0.695** | 0.37–0.39 |
+| 2 [3,6] | 0.395 / 0.395 / 0.379 | 0.39–0.41 |
+| 3 [6,10] | 0.139 / 0.105 / 0.101 | 0.22–0.25 |
+| 4 certified | **0.007 / 0.006 / 0.005** (plateaued) | 0.11 |
+
+Two findings, both load-bearing:
+1. **The joint-discovery hypothesis is CONFIRMED.** With [1,3] spawns the
+   policies reach E[C] ≈ 0.69 within 25M steps — completion is learnable,
+   the reward works, and the earlier flat-task failures were an
+   exploration/discovery problem, exactly as hypothesised. This retires
+   the "deeper than exploration" worry the probe was designed to test.
+2. **Transfer across windows is the new binding constraint.** Each
+   transition halves-or-worse the competence (0.69 → 0.40 → 0.11 → 0.006),
+   and the certified-bank endpoint is back at baseline. single_latch_share
+   degrades in parallel (0.38 → 0.11): the skill itself erodes rather
+   than one agent stranding the other. Under the decision rule this is
+   the stop-and-report branch (certified E[C] ≪ 0.3; the "~0 even in
+   phase 1" falsification branch explicitly does NOT apply).
+
+Directions for the joint design of round 2, cheapest first: (a) MIXED
+phases — sample each episode's bank row from a phase MIXTURE that anneals
+(e.g. 70/20/10 easy-mid-hard → … → certified-only), so earlier
+competence is continuously rehearsed instead of abandoned at a hard swap
+(implementable as bank concatenation at build time: zero loader/env
+changes); (b) more, smaller window steps; (c) per-phase LR/entropy warm
+restart (the KLAdaptiveLR state currently resets at each phase boundary
+by construction — the optimizer LR carries via the checkpoint, but the
+schedule's KL memory does not; worth controlling). GPU: 12 runs ≈ 24 min.
+
+Correction note for the record: an interim mid-probe status (sent before
+all runs finished) misattributed one seed's phase-1 curve to the certified
+phase due to a run-directory alignment error; the table above is from the
+complete, order-verified extraction. No pushed number was affected.
