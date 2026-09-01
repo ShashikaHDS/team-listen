@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Team Listen — Illustrated Briefing</title>
+<style>
+  @page { size: A4; margin: 14mm 13mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; line-height: 1.42; color: #21272e; margin: 0 auto; max-width: 184mm; }
+  .banner { background: #123c5c; color: #fff; border-radius: 4mm; padding: 6mm 7mm 5mm 7mm; margin-bottom: 5mm; }
+  .banner h1 { margin: 0 0 1mm 0; font-size: 19pt; letter-spacing: 0.2px; }
+  .banner .sub { font-size: 10.5pt; color: #bcd6ea; font-style: italic; }
+  .banner .tags { margin-top: 2.5mm; }
+  .tag { display: inline-block; background: #1d557e; color: #dcebf7; border-radius: 3mm; padding: 0.8mm 3mm; font-size: 8pt; margin-right: 1.5mm; }
+  h2 { font-size: 13pt; color: #123c5c; margin: 6mm 0 2mm 0; }
+  h2 .num { display: inline-block; background: #e07b39; color: #fff; border-radius: 2mm; width: 6.5mm; text-align: center; margin-right: 2mm; }
+  p { margin: 0 0 2.2mm 0; }
+  .fig { margin: 2mm 0 3mm 0; page-break-inside: avoid; }
+  .fig .cap { font-size: 8.5pt; color: #5a6570; margin-top: 1mm; text-align: center; }
+  .cards { display: flex; gap: 3mm; margin: 2mm 0 3mm 0; page-break-inside: avoid; }
+  .card { flex: 1; border: 1px solid #d6dde3; border-top: 3px solid #17877b; border-radius: 2mm; padding: 2.5mm 3mm; background: #fbfcfd; }
+  .card h3 { margin: 0 0 1mm 0; font-size: 10pt; color: #123c5c; }
+  .card p { font-size: 8.8pt; margin: 0; color: #39434d; }
+  .why { display: flex; flex-wrap: wrap; gap: 3mm; margin: 2mm 0 3mm 0; page-break-inside: avoid; }
+  .why div { flex: 1 1 42%; background: #f2f7f5; border-radius: 2mm; padding: 2.5mm 3mm; font-size: 9pt; }
+  .why b { color: #17877b; }
+  .bet { background: #fdf3ea; border: 1px solid #eeceb0; border-left: 4px solid #e07b39; border-radius: 2mm; padding: 2.5mm 3.5mm; margin: 2.5mm 0; font-size: 9.5pt; page-break-inside: avoid; }
+  table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 1.5mm 0 3mm 0; }
+  th, td { border: 0.5px solid #c6ced6; padding: 1.4mm 2.2mm; text-align: left; vertical-align: top; }
+  th { background: #eef2f6; color: #123c5c; }
+  .ok { color: #17877b; font-weight: 700; }
+  .warn { color: #b0621d; font-weight: 700; }
+  .small { font-size: 8.5pt; color: #5a6570; }
+  svg text { font-family: 'Segoe UI', Arial, sans-serif; }
+  .footer { border-top: 1px solid #c6ced6; margin-top: 5mm; padding-top: 2mm; font-size: 8pt; color: #6a7480; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>Team Listen</h1>
+  <div class="sub">Does the team actually listen? A causal audit of language grounding in multi-robot policies</div>
+  <div class="tags"><span class="tag">Multi-agent RL (MAPPO)</span><span class="tag">Isaac Lab</span><span class="tag">VLM / language conditioning</span><span class="tag">100% simulation</span><span class="tag">1&times; RTX 5090</span><span class="tag">One journal paper, 6&ndash;12 months</span></div>
+</div>
+
+<h2><span class="num">1</span>The idea in one picture</h2>
+<p>Language-commanded robots are the biggest trend in robot learning, and recent audits showed single-arm systems often <b>ignore the words</b> and act on what they see. Nobody has checked robot <b>teams</b> — where language does work vision cannot: deciding <i>who</i> takes <i>which</i> identical-looking target, or who goes first. Our audit freezes the world and changes <b>only the sentence</b>:</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 190" width="100%">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e07b39"/></marker>
+  </defs>
+  <!-- panel A -->
+  <rect x="8" y="14" width="300" height="150" rx="8" fill="#f2f7fb" stroke="#c6d6e2"/>
+  <text x="158" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#123c5c">Scene A</text>
+  <rect x="30" y="40" width="118" height="16" rx="8" fill="#fff" stroke="#9fb8c9"/>
+  <text x="89" y="52" text-anchor="middle" font-size="9.5" fill="#21272e">&#8220;Robot 1 &#8594; LEFT station&#8221;</text>
+  <!-- stations -->
+  <circle cx="70" cy="128" r="16" fill="#fff" stroke="#17877b" stroke-width="2.5"/>
+  <circle cx="246" cy="128" r="16" fill="#fff" stroke="#17877b" stroke-width="2.5"/>
+  <text x="70" y="132" text-anchor="middle" font-size="9" fill="#17877b">L</text>
+  <text x="246" y="132" text-anchor="middle" font-size="9" fill="#17877b">R</text>
+  <!-- robots -->
+  <rect x="128" y="72" width="22" height="22" rx="4" fill="#1d557e"/>
+  <text x="139" y="87" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">1</text>
+  <rect x="168" y="72" width="22" height="22" rx="4" fill="#e07b39"/>
+  <text x="179" y="87" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">2</text>
+  <path d="M132 96 C 105 105, 88 112, 78 118" stroke="#1d557e" stroke-width="2.2" fill="none" stroke-dasharray="4 3"/>
+  <path d="M186 96 C 214 105, 230 112, 239 118" stroke="#e07b39" stroke-width="2.2" fill="none" stroke-dasharray="4 3"/>
+  <!-- panel B -->
+  <rect x="392" y="14" width="300" height="150" rx="8" fill="#f2f7fb" stroke="#c6d6e2"/>
+  <text x="542" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#123c5c">Scene B &mdash; identical world, identical dice</text>
+  <rect x="414" y="40" width="122" height="16" rx="8" fill="#fdf0e5" stroke="#e07b39"/>
+  <text x="475" y="52" text-anchor="middle" font-size="9.5" fill="#8a4a15">&#8220;Robot 1 &#8594; RIGHT station&#8221;</text>
+  <circle cx="454" cy="128" r="16" fill="#fff" stroke="#17877b" stroke-width="2.5"/>
+  <circle cx="630" cy="128" r="16" fill="#fff" stroke="#17877b" stroke-width="2.5"/>
+  <text x="454" y="132" text-anchor="middle" font-size="9" fill="#17877b">L</text>
+  <text x="630" y="132" text-anchor="middle" font-size="9" fill="#17877b">R</text>
+  <rect x="512" y="72" width="22" height="22" rx="4" fill="#1d557e"/>
+  <text x="523" y="87" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">1</text>
+  <rect x="552" y="72" width="22" height="22" rx="4" fill="#e07b39"/>
+  <text x="563" y="87" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">2</text>
+  <text x="542" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#b0621d">Does anything change?</text>
+  <!-- middle arrow -->
+  <line x1="316" y1="90" x2="384" y2="90" stroke="#e07b39" stroke-width="3" marker-end="url(#ar)"/>
+  <text x="350" y="80" text-anchor="middle" font-size="9.5" font-weight="700" fill="#e07b39">swap only</text>
+  <text x="350" y="104" text-anchor="middle" font-size="9.5" font-weight="700" fill="#e07b39">the words</text>
+  <text x="158" y="180" text-anchor="middle" font-size="9" fill="#5a6570">Listening team: paths swap</text>
+  <text x="542" y="180" text-anchor="middle" font-size="9" fill="#5a6570">Deaf team: identical paths &mdash; yet &#8220;task success&#8221; still looks high</text>
+</svg>
+<div class="cap">The counterfactual-instruction test. Aggregate success cannot tell these two teams apart; our audit can.</div>
+</div>
+
+<h2><span class="num">2</span>What we build &mdash; three instruments</h2>
+<div class="cards">
+  <div class="card"><h3>&#127991;&#65039; Certified tasks</h3><p>Cooperative Isaac Lab tasks (role binding, precedence, exclusion, reassignment) where geometry alone <b>cannot</b> reveal the right assignment &mdash; and a machine-checked <b>certificate</b> proving it.</p></div>
+  <div class="card"><h3>&#128202; The CSI metric</h3><p><b>Coordination Sensitivity Index</b>: how much behaviour changes when only the instruction changes, normalised by ordinary run-to-run noise. A deafness meter for robot teams.</p></div>
+  <div class="card"><h3>&#128268; Four language interfaces</h3><p>Broadcast sentence &middot; per-robot prompts &middot; frozen VLM &#8220;commander&#8221; &middot; sentence embedding &mdash; trained identically, audited identically, compared fairly.</p></div>
+</div>
+
+<div class="bet"><b>Pre-registered headline bet:</b> teams will listen for <b>role assignment</b> but be nearly deaf to <b>precedence</b> (&#8220;robot 1 docks first&#8221;) &mdash; because collision avoidance produces turn-taking for free. A team can obey half its orders, ignore the other half, and still score full marks on every existing benchmark.</div>
+
+<h2><span class="num">3</span>Why this gap is real &mdash; and ours to take</h2>
+<div class="why">
+  <div><b>Single-arm audits stop at one robot.</b> LIBERO-Plus / LangGap only perturb object names. Role binding, precedence, exclusion are inexpressible with one arm.</div>
+  <div><b>Multi-robot language papers never audit.</b> CHORUS, MA-VLA and peers report aggregate success only &mdash; the exact setting where a dead language channel hides.</div>
+  <div><b>No metric survives team randomness.</b> Raw behaviour deltas are meaningless in MARL; the seed-normalisation in CSI is the missing piece. Verified unoccupied by an adversarial novelty search of 2024&ndash;26 work.</div>
+  <div><b>Fits our resources exactly.</b> Everything language-side is frozen (cached embeddings, distilled commander) &mdash; only small MARL policies train. One RTX 5090 covers the full program in &asymp;15 GPU-hours.</div>
+</div>
+
+<h2><span class="num">4</span>How the audit works</h2>
+
+<div class="fig">
+<svg viewBox="0 0 700 150" width="100%">
+  <defs><marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1d557e"/></marker></defs>
+  <!-- certificate half -->
+  <rect x="8" y="10" width="330" height="130" rx="8" fill="#f2f7f5" stroke="#bcd6cd"/>
+  <text x="173" y="28" text-anchor="middle" font-size="11.5" font-weight="700" fill="#123c5c">Step 1 &mdash; the language-necessity certificate</text>
+  <rect x="28" y="44" width="92" height="56" rx="6" fill="#fff" stroke="#17877b" stroke-width="1.5"/>
+  <text x="74" y="62" text-anchor="middle" font-size="9" fill="#21272e">&#8220;Oracle&#8221; policy</text>
+  <text x="74" y="74" text-anchor="middle" font-size="8.5" fill="#5a6570">sees everything</text>
+  <text x="74" y="85" text-anchor="middle" font-size="8.5" font-weight="700" fill="#b0621d">except the words</text>
+  <line x1="124" y1="72" x2="176" y2="72" stroke="#1d557e" stroke-width="2.5" marker-end="url(#ab)"/>
+  <circle cx="228" cy="72" r="34" fill="#fff" stroke="#123c5c" stroke-width="2"/>
+  <path d="M228 72 L228 40 A32 32 0 0 1 258 82 Z" fill="#dbe7f1"/>
+  <text x="228" y="70" text-anchor="middle" font-size="13" font-weight="700" fill="#123c5c">50%</text>
+  <text x="228" y="83" text-anchor="middle" font-size="7.5" fill="#5a6570">coin flip</text>
+  <text x="290" y="60" font-size="8.5" fill="#21272e">must guess the</text>
+  <text x="290" y="70" font-size="8.5" fill="#21272e">assignment at</text>
+  <text x="290" y="80" font-size="8.5" fill="#21272e">exactly chance,</text>
+  <text x="290" y="90" font-size="8.5" fill="#21272e">or the task is</text>
+  <text x="290" y="100" font-size="8.5" fill="#21272e">redesigned</text>
+  <text x="173" y="128" text-anchor="middle" font-size="8.5" fill="#5a6570">Backed by bit-exact paired episodes + a leak probe &mdash; not statistics alone</text>
+  <!-- CSI half -->
+  <rect x="362" y="10" width="330" height="130" rx="8" fill="#f4f4fa" stroke="#c9c9df"/>
+  <text x="527" y="28" text-anchor="middle" font-size="11.5" font-weight="700" fill="#123c5c">Step 2 &mdash; the CSI score</text>
+  <text x="382" y="52" font-size="9" fill="#21272e">behaviour change from</text>
+  <text x="382" y="63" font-size="9" font-weight="700" fill="#e07b39">swapping the instruction</text>
+  <rect x="382" y="70" width="180" height="13" rx="3" fill="#f3ddca"/>
+  <rect x="382" y="70" width="126" height="13" rx="3" fill="#e07b39"/>
+  <text x="382" y="103" font-size="9" fill="#21272e">behaviour change from</text>
+  <text x="382" y="114" font-size="9" font-weight="700" fill="#1d557e">re-rolling the dice only</text>
+  <rect x="382" y="121" width="180" height="13" rx="3" fill="#d3dfea"/>
+  <rect x="382" y="121" width="60" height="13" rx="3" fill="#1d557e"/>
+  <text x="620" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#123c5c">CSI &asymp; ratio</text>
+  <rect x="588" y="90" width="66" height="34" rx="5" fill="#fff" stroke="#123c5c" stroke-width="1.5"/>
+  <text x="621" y="104" text-anchor="middle" font-size="8" fill="#5a6570">0 = deaf</text>
+  <text x="621" y="116" text-anchor="middle" font-size="8" fill="#5a6570">high = listening</text>
+</svg>
+<div class="cap">Certificate first (is language even needed?), then CSI (is it actually used?), per semantic category, with clustered bootstrap confidence intervals.</div>
+</div>
+
+<div class="fig">
+<svg viewBox="0 0 700 120" width="100%">
+  <text x="350" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#123c5c">Four ways to give a team its orders &mdash; compared head-to-head</text>
+  <g>
+    <rect x="14" y="28" width="158" height="74" rx="7" fill="#fbfcfd" stroke="#d6dde3"/>
+    <text x="93" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#123c5c">Broadcast</text>
+    <rect x="60" y="52" width="66" height="12" rx="6" fill="#fff" stroke="#9fb8c9"/>
+    <line x1="80" y1="66" x2="70" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <line x1="106" y1="66" x2="116" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <rect x="58" y="84" width="15" height="15" rx="3" fill="#1d557e"/>
+    <rect x="110" y="84" width="15" height="15" rx="3" fill="#e07b39"/>
+    <text x="93" y="115" text-anchor="middle" font-size="7.5" fill="#5a6570">one sentence to all</text>
+  </g>
+  <g>
+    <rect x="186" y="28" width="158" height="74" rx="7" fill="#fbfcfd" stroke="#d6dde3"/>
+    <text x="265" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#123c5c">Per-agent prompts</text>
+    <rect x="200" y="52" width="56" height="12" rx="6" fill="#fff" stroke="#9fb8c9"/>
+    <rect x="276" y="52" width="56" height="12" rx="6" fill="#fff" stroke="#9fb8c9"/>
+    <line x1="228" y1="66" x2="228" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <line x1="304" y1="66" x2="304" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <rect x="220" y="84" width="15" height="15" rx="3" fill="#1d557e"/>
+    <rect x="296" y="84" width="15" height="15" rx="3" fill="#e07b39"/>
+    <text x="265" y="115" text-anchor="middle" font-size="7.5" fill="#5a6570">each robot its own line</text>
+  </g>
+  <g>
+    <rect x="358" y="28" width="158" height="74" rx="7" fill="#fbfcfd" stroke="#d6dde3"/>
+    <text x="437" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#123c5c">VLM commander</text>
+    <circle cx="437" cy="62" r="11" fill="#17877b"/>
+    <text x="437" y="66" text-anchor="middle" font-size="8" fill="#fff" font-weight="700">VLM</text>
+    <line x1="428" y1="70" x2="412" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <line x1="446" y1="70" x2="462" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <rect x="402" y="84" width="15" height="15" rx="3" fill="#1d557e"/>
+    <rect x="454" y="84" width="15" height="15" rx="3" fill="#e07b39"/>
+    <text x="437" y="115" text-anchor="middle" font-size="7.5" fill="#5a6570">frozen 3B model assigns sub-goals</text>
+  </g>
+  <g>
+    <rect x="530" y="28" width="158" height="74" rx="7" fill="#fbfcfd" stroke="#d6dde3"/>
+    <text x="609" y="44" text-anchor="middle" font-size="9.5" font-weight="700" fill="#123c5c">Sentence embedding</text>
+    <rect x="576" y="54" width="66" height="12" rx="2" fill="#fff" stroke="#9fb8c9"/>
+    <text x="609" y="63" text-anchor="middle" font-size="7.5" fill="#5a6570">[0.2, &#8722;0.7, &#8230;]</text>
+    <line x1="592" y1="68" x2="582" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <line x1="626" y1="68" x2="636" y2="82" stroke="#8aa2b5" stroke-width="1.5"/>
+    <rect x="574" y="84" width="15" height="15" rx="3" fill="#1d557e"/>
+    <rect x="628" y="84" width="15" height="15" rx="3" fill="#e07b39"/>
+    <text x="609" y="115" text-anchor="middle" font-size="7.5" fill="#5a6570">frozen text vector into the policy</text>
+  </g>
+</svg>
+<div class="cap">Same tasks, same MARL training, same audit &mdash; only the language pathway differs. Which interface makes a team actually listen?</div>
+</div>
+
+<h2><span class="num">5</span>The paper and the road to it</h2>
+<p><b>Venue:</b> IEEE Transactions on Artificial Intelligence (primary; the only IEEE transactions with precedent for evaluation-methodology papers and no hardware expectation, ~12-week first decisions), with the new IEEE T-Robot Learning as a hedged alternative and TCDS &#8594; TNNLS &#8594; TMLR as the backup chain. An arXiv preprint at month 7 protects priority in a subgenre producing competing preprints monthly. The paper is framed as <i>measurement methodology</i>: contributions are the certificate, the CSI metric with formal properties, the dissociation finding, and the open harness.</p>
+
+<div class="fig">
+<svg viewBox="0 0 700 108" width="100%">
+  <line x1="30" y1="42" x2="670" y2="42" stroke="#c6ced6" stroke-width="5" stroke-linecap="round"/>
+  <line x1="30" y1="42" x2="180" y2="42" stroke="#17877b" stroke-width="5" stroke-linecap="round"/>
+  <g font-size="8.2">
+    <circle cx="55" cy="42" r="7" fill="#17877b"/><text x="55" y="24" text-anchor="middle" font-weight="700" fill="#123c5c">M1</text><text x="55" y="62" text-anchor="middle" fill="#39434d">tasks + certificate</text><text x="55" y="72" text-anchor="middle" fill="#39434d">first CSI</text><text x="55" y="86" text-anchor="middle" font-weight="700" fill="#b0621d">GO / PIVOT gate</text>
+    <circle cx="175" cy="42" r="7" fill="#17877b"/><text x="175" y="24" text-anchor="middle" font-weight="700" fill="#123c5c">M2 &middot; mo 2&ndash;3</text><text x="175" y="62" text-anchor="middle" fill="#39434d">4 interfaces</text><text x="175" y="72" text-anchor="middle" fill="#39434d">dissociation test</text><text x="175" y="86" text-anchor="middle" font-weight="700" fill="#b0621d">paper identity fixed</text>
+    <circle cx="295" cy="42" r="7" fill="#9fb8c9"/><text x="295" y="24" text-anchor="middle" font-weight="700" fill="#123c5c">M3 &middot; mo 4&ndash;5</text><text x="295" y="62" text-anchor="middle" fill="#39434d">full task family</text><text x="295" y="72" text-anchor="middle" fill="#39434d">baselines, N=2&ndash;4</text>
+    <circle cx="415" cy="42" r="7" fill="#9fb8c9"/><text x="415" y="24" text-anchor="middle" font-weight="700" fill="#123c5c">M4 &middot; mo 6&ndash;7</text><text x="415" y="62" text-anchor="middle" fill="#39434d">CSI predicts</text><text x="415" y="72" text-anchor="middle" fill="#39434d">generalisation</text><text x="415" y="86" text-anchor="middle" font-weight="700" fill="#b0621d">arXiv v1 &#8594; priority</text>
+    <circle cx="535" cy="42" r="7" fill="#9fb8c9"/><text x="535" y="24" text-anchor="middle" font-weight="700" fill="#123c5c">M5 &middot; mo 8&ndash;9</text><text x="535" y="62" text-anchor="middle" fill="#39434d">cross-fidelity arm</text><text x="535" y="72" text-anchor="middle" fill="#39434d">real VLM, rendering</text>
+    <circle cx="650" cy="42" r="7" fill="#9fb8c9"/><text x="650" y="24" text-anchor="middle" font-weight="700" fill="#123c5c">M6 &middot; mo 10&ndash;12</text><text x="650" y="62" text-anchor="middle" fill="#39434d">harness release</text><text x="650" y="72" text-anchor="middle" fill="#39434d">journal submission</text>
+  </g>
+</svg>
+<div class="cap">Twelve-month roadmap. Green = territory already entered. Writing runs alongside: the pre-registration doubles as the first draft of the methods sections.</div>
+</div>
+
+<h2><span class="num">6</span>Where we are today</h2>
+<table>
+<tr><th style="width:34mm">Area</th><th>Status</th></tr>
+<tr><td>Direction &amp; novelty</td><td><span class="ok">&#10004; Done</span> &mdash; survived an adversarial search for prior work; decisions logged in-repo</td></tr>
+<tr><td>Design &amp; spec</td><td><span class="ok">&#10004; Done</span> &mdash; red-teamed by three independent reviews; 24 critical flaws fixed before any code</td></tr>
+<tr><td>Code &amp; tests</td><td><span class="ok">&#10004; Done</span> &mdash; environment (bit-parity with our published rendezvous env), rewards, banks, rollout, certificate, CSI &mdash; 17 test files, all green</td></tr>
+<tr><td>GPU validation</td><td><span class="ok">&#10004; Passed</span> &mdash; 390k env-steps/s (3.9&times; the gate); audit machinery bit-exact on GPU at 4000 parallel envs; full program &asymp; 15 GPU-hours</td></tr>
+<tr><td>Training</td><td><span class="warn">&#9881; In progress</span> &mdash; a mid-training optimiser instability was root-caused and fixed (LR ceiling); the pre-planned reward-shaping pilot now runs to establish competent learning before the headline campaign</td></tr>
+<tr><td>Pre-registration</td><td><span class="ok">&#10004; Frozen</span> &mdash; evaluation protocol locked in git before any policy evaluation; OSF registration is the month-1 writing task</td></tr>
+</table>
+
+<h2><span class="num">7</span>Risks, honestly</h2>
+<table>
+<tr><th style="width:62mm">Risk</th><th>Answer</th></tr>
+<tr><td>&#8220;Teams ignore language&#8221; sounds pre-announced</td><td>The contribution is the instruments + the dissociation, pre-registered; months 2&ndash;3 find the differentiated result or pivot early</td></tr>
+<tr><td>Policies may fail to learn the tasks</td><td>A pre-registered pilot ladder (shaping &#8594; simpler grids) runs before anything headline; even a redesign is reportable evidence</td></tr>
+<tr><td>Getting scooped</td><td>Scope freeze month 6, arXiv month 7; the exact delta was verified unoccupied</td></tr>
+<tr><td>Journal rejects simulation-only work</td><td>Primary venue chosen for proven tolerance; cross-fidelity arm answers the embodiment question; backup chain pre-agreed</td></tr>
+</table>
+
+<div class="footer">Team Listen &middot; September 2026 &middot; github.com/ShashikaHDS/team-listen &middot; companion documents: RESEARCH_PLAN.md &middot; PAPER_PLAN.md &middot; M1_SPEC.md &middot; DECISIONS.md</div>
+
+</body>
+</html>
