@@ -93,3 +93,30 @@ clause 3 and the λ/ε pilot's scope.
 4. Paper note: a systematic mid-training instability of skrl MAPPO +
    Discrete at this scale is reportable training-details material either
    way (spec's own "genuinely untested territory" flag was prescient).
+
+---
+
+## Addendum (same day): certificate eval of the three completed checkpoints
+
+Wave-3 harness driven on the real Isaac env (`scripts/eval_checkpoints.py`,
+committed): paired manifest, first 2000 eval-split rows per variant, argmax.
+Full verdict JSONs in runs/diag/certeval_*.json (untracked).
+
+| Checkpoint | Verdict | Completed episodes (of 4000) | Paired-lane identity | Leak probes |
+|---|---|---|---|---|
+| RB_Blind_s1 | UNINFORMATIVE (constant assignment) | 2 | PASS (bitwise) | AUC ≈ 0.5, no leak |
+| RB_Blind_s2 | UNINFORMATIVE (constant assignment) | 4 | PASS (bitwise) | AUC ≈ 0.5, no leak |
+| Prec_Blind_s4 | UNINFORMATIVE (nothing to score) | 0 | PASS (bitwise) | AUC ≈ 0.5, no leak |
+
+Two conclusions:
+1. **The audit machinery is validated end-to-end on GPU**: the spec-4.3
+   machine check (bitwise lane equality) holds on the real TeamGridEnv at
+   4000 envs, scorer consistency passes, probes are calibrated. This was
+   the paired design's biggest untested risk and it is now retired.
+2. **The negative TB returns were real incompetence, not reward
+   accounting**: E[C] ≈ 0.0005/0.001/0.0 versus the pre-registered
+   E[C] ≥ 0.90 competence clause. With the crash mechanism now diagnosed
+   (docs/CRASH_DIAGNOSIS.md) the milestone's binding constraint is
+   LEARNING — credit assignment/exploration under the 128-step horizon —
+   which is λ-sweep / task-design territory (spec 4.5 ladder, OPEN(5)/(8)),
+   not infrastructure.
