@@ -1,0 +1,21 @@
+# Pre-registration constants for the M1 certificate and CSI evaluation.
+# Frozen in git BEFORE any evaluation of trained policies (training was
+# dispatched 2026-09-01; no checkpoint has been evaluated as of this commit).
+# The OSF/arXiv pre-registration document mirrors these values.
+equivalence_test: TOST
+alpha: 0.05
+equivalence_margin_delta: 0.05
+chance_level: 0.5
+clustering_unit: base_scenario
+primary_interval: hierarchical_bootstrap_scenarios_x_seeds
+bootstrap_replicates: 10000
+bootstrap_method: percentile
+primary_outcome: itt_three_valued
+assignment_marginal_lo: 0.35
+assignment_marginal_hi: 0.65
+probe_confidence: 0.95
+probe_folds: 5
+probe_ridge: 0.1
+probe_bootstrap_replicates: 2000
+competence_min: 0.9
+competence_ci_lo_min: 0.85
