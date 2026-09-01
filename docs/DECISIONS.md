@@ -2,6 +2,28 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-01 - Training campaign crash: diagnosis-first, mitigations gated on evidence
+
+First M1 campaign (docs/TRAIN_M1_RESULTS.md): 16/20 runs died from an
+identical stochastic CUDA device-side assert with 47-81% onset, Lang
+0/10 vs Blind 3/10 completed, and all completed runs ended with negative
+returns (the ratified watch item confirmed at full budget). Leading
+hypothesis: KLAdaptiveLR spike (3e-4 to 1.1e-3 observed) driving a
+single-minibatch logit explosion in the Categorical head, with the Lang
+arm's unpreprocessed near-constant 32-d slice as accelerant. DECISIONS:
+(1) diagnosis before mitigation - instrumented repro names the faulting
+kernel first; (2) candidate mitigations (KLAdaptiveLR ceiling,
+slice-aware observation preprocessor per OPEN(3)) are evaluated as
+single-run probes, adopted only on evidence, and any adopted change to
+the TRAINING config is disclosed here - config/preregistration.yaml
+freezes the EVALUATION protocol, not optimiser hyperparameters, and no
+trained policy has been evaluated yet; (3) the campaign runner gains a
+retry-once-on-boot-failure policy (the single kit segfault was
+environmental); (4) the competence question is separated from the crash:
+the three completed checkpoints go through the wave-3 certificate
+harness's non-gating competence path before any reward-balance change is
+considered.
+
 ## 2026-09-01 - Throughput gate PASS; training num_envs frozen at 8192
 
 Gate results (docs/GATE_RESULTS.md, be4e3a5): MAPPO training mode sustains
