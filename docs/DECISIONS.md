@@ -2,6 +2,32 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-01 - Crash fix ratified; binding constraint moves to learning
+
+Root cause named (docs/CRASH_DIAGNOSIS.md): KLAdaptiveLR growth produces
+an intra-update logit explosion in the 5-way Categorical, asserting in
+Categorical.sample on the next minibatch; deterministic per seed;
+preprocessor probe falsified the observation-scaling hypothesis.
+RATIFIED: (1) max_lr 5.0e-4 in learning_rate_scheduler_kwargs of BOTH
+agent YAMLs (mechanism-aligned; 1.7x warm-up headroom retained; outside
+the evaluation prereg per the crash-response policy); (2) a per-minibatch
+weight-finiteness assert armed for campaign runs only; (3) headline
+tables use homogeneous-config runs only - the three pre-fix completed
+runs are diagnostic material, not table rows; (4) instrumentation lesson
+recorded: probing a policy with act() consumes global RNG and diverts
+deterministic trajectories - compute logits sample-free or restore RNG
+state. ALSO CLOSED: the wave-3 audit machinery is validated end-to-end
+on the real Isaac env (bitwise paired-lane equality at 4000 envs, scorer
+consistency, calibrated probes).
+
+FINDING: the certificate eval shows completed policies are incompetent
+(E[C] ~ 0 vs the 0.90 clause) - the negative returns were real learning
+failure, not reward accounting. The binding constraint is now credit
+assignment/exploration, which is the spec's pre-registered lambda/epsilon
+pilot (OPEN(5), run before any headline) and, if that fails, OPEN(8)
+grid-size/density reduction. The 20-run campaign re-run is DEFERRED until
+a pilot cell demonstrates competent blind learning.
+
 ## 2026-09-01 - Training campaign crash: diagnosis-first, mitigations gated on evidence
 
 First M1 campaign (docs/TRAIN_M1_RESULTS.md): 16/20 runs died from an
