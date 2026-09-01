@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Team Listen — The Story in Pictures</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 15.5px; line-height: 1.5; color: #3a3630; margin: 0; background: #efe9df; }
+  .page { max-width: 980px; margin: 0 auto; padding: 28px 34px 46px 34px; background: #fdf9f2; }
+  h1 { font-size: 28px; color: #2c4a66; margin: 4px 0 2px 0; }
+  .sub { color: #7a7466; font-style: italic; margin-bottom: 18px; }
+  h2 { font-size: 20px; color: #2c4a66; margin: 34px 0 6px 0; }
+  h2 .n { display: inline-block; background: #e0813f; color: #fff; border-radius: 50%; width: 30px; height: 30px; line-height: 30px; text-align: center; margin-right: 9px; font-size: 16px; }
+  p { margin: 0 0 10px 0; }
+  .scene { background: #fff; border: 2px solid #e3dccc; border-radius: 14px; padding: 12px 14px 6px 14px; margin: 12px 0 6px 0; }
+  .cap { font-size: 13px; color: #8a8272; text-align: center; margin: 2px 0 16px 0; }
+  svg text { font-family: 'Segoe UI', Arial, sans-serif; }
+  .takeaway { background: #f2f7f3; border: 2px dashed #7fae8d; border-radius: 12px; padding: 10px 16px; margin: 14px 0; font-size: 15px; }
+  .takeaway b { color: #3d7a52; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- shared symbols -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="bot" viewBox="0 0 60 64">
+      <circle cx="18" cy="56" r="7" fill="#3a3630"/><circle cx="42" cy="56" r="7" fill="#3a3630"/>
+      <circle cx="18" cy="56" r="3" fill="#8a8272"/><circle cx="42" cy="56" r="3" fill="#8a8272"/>
+      <rect x="8" y="18" width="44" height="34" rx="8" fill="currentColor"/>
+      <rect x="14" y="24" width="32" height="14" rx="7" fill="#fff"/>
+      <circle cx="24" cy="31" r="3.4" fill="#3a3630"/><circle cx="36" cy="31" r="3.4" fill="#3a3630"/>
+      <line x1="30" y1="18" x2="30" y2="9" stroke="#3a3630" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="30" cy="7" r="3" fill="#d8503f"/>
+    </symbol>
+    <symbol id="botsad" viewBox="0 0 60 64">
+      <circle cx="18" cy="56" r="7" fill="#3a3630"/><circle cx="42" cy="56" r="7" fill="#3a3630"/>
+      <circle cx="18" cy="56" r="3" fill="#8a8272"/><circle cx="42" cy="56" r="3" fill="#8a8272"/>
+      <rect x="8" y="18" width="44" height="34" rx="8" fill="currentColor"/>
+      <rect x="14" y="24" width="32" height="14" rx="7" fill="#fff"/>
+      <line x1="21" y1="28" x2="27" y2="34" stroke="#3a3630" stroke-width="2.6" stroke-linecap="round"/>
+      <line x1="27" y1="28" x2="21" y2="34" stroke="#3a3630" stroke-width="2.6" stroke-linecap="round"/>
+      <line x1="33" y1="28" x2="39" y2="34" stroke="#3a3630" stroke-width="2.6" stroke-linecap="round"/>
+      <line x1="39" y1="28" x2="33" y2="34" stroke="#3a3630" stroke-width="2.6" stroke-linecap="round"/>
+      <line x1="30" y1="18" x2="30" y2="9" stroke="#3a3630" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="30" cy="7" r="3" fill="#d8503f"/>
+    </symbol>
+    <symbol id="crate" viewBox="0 0 44 40">
+      <rect x="2" y="6" width="40" height="32" rx="4" fill="#d9b98a" stroke="#a9895c" stroke-width="2.5"/>
+      <line x1="2" y1="20" x2="42" y2="20" stroke="#a9895c" stroke-width="2"/>
+      <line x1="22" y1="6" x2="22" y2="38" stroke="#a9895c" stroke-width="2"/>
+    </symbol>
+    <symbol id="human" viewBox="0 0 40 70">
+      <circle cx="20" cy="12" r="9" fill="#e8c39e"/>
+      <path d="M20 21 L20 48 M20 28 L6 40 M20 28 L34 40 M20 48 L9 66 M20 48 L31 66" stroke="#5b667a" stroke-width="5" stroke-linecap="round" fill="none"/>
+    </symbol>
+  </defs>
+</svg>
+
+<h1>Does the Team Actually Listen?</h1>
+<div class="sub">The whole project told as a picture story &mdash; the problem, why it matters, how our machine works, and what we expect to find.</div>
+
+<!-- ============ 1 THE PROBLEM ============ -->
+<h2><span class="n">1</span>The problem: robots that nod along</h2>
+<p>You tell a pair of warehouse robots what to do. They do <i>something sensible</i>, the boxes get moved, everyone is happy. But here is the uncomfortable question researchers started asking single robots in 2025 &mdash; and nobody has asked teams:</p>
+
+<div class="scene">
+<svg viewBox="0 0 900 250" width="100%">
+  <!-- left panel: what we see -->
+  <rect x="10" y="12" width="425" height="212" rx="12" fill="#f6f2e8" stroke="#e3dccc" stroke-width="2"/>
+  <text x="222" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#2c4a66">What we see</text>
+  <use href="#human" x="40" y="60" width="46" height="80"/>
+  <path d="M96 76 h150 a10 10 0 0 1 10 10 v26 a10 10 0 0 1 -10 10 h-124 l-14 14 v-14 h-12 a10 10 0 0 1 -10 -10 v-26 a10 10 0 0 1 10 -10 z" fill="#fff" stroke="#5b667a" stroke-width="2.5"/>
+  <text x="181" y="98" text-anchor="middle" font-size="12.5" fill="#3a3630">&#8220;Robot BLUE take the left crate,</text>
+  <text x="181" y="114" text-anchor="middle" font-size="12.5" fill="#3a3630">ORANGE the right one!&#8221;</text>
+  <use href="#bot" x="220" y="140" width="56" height="60" color="#4a7fb5"/>
+  <use href="#bot" x="300" y="140" width="56" height="60" color="#e0813f"/>
+  <use href="#crate" x="180" y="176" width="40" height="36"/>
+  <use href="#crate" x="380" y="176" width="40" height="36"/>
+  <path d="M240 172 C 220 178, 212 182, 205 184" stroke="#4a7fb5" stroke-width="3" fill="none" stroke-dasharray="5 4" stroke-linecap="round"/>
+  <path d="M340 172 C 362 178, 372 182, 382 184" stroke="#e0813f" stroke-width="3" fill="none" stroke-dasharray="5 4" stroke-linecap="round"/>
+  <text x="222" y="238" text-anchor="middle" font-size="13" fill="#3d7a52" font-weight="700">&#10004; Task done. Looks perfect.</text>
+
+  <!-- right panel: what may be true -->
+  <rect x="465" y="12" width="425" height="212" rx="12" fill="#fbeeea" stroke="#e6c8bf" stroke-width="2"/>
+  <text x="677" y="36" text-anchor="middle" font-size="15" font-weight="700" fill="#a13d2d">What might be true underneath</text>
+  <use href="#bot" x="560" y="120" width="66" height="70" color="#4a7fb5"/>
+  <!-- thought bubble -->
+  <circle cx="648" cy="112" r="4" fill="#fff" stroke="#a99f90" stroke-width="2"/>
+  <circle cx="662" cy="98" r="6" fill="#fff" stroke="#a99f90" stroke-width="2"/>
+  <ellipse cx="720" cy="72" rx="58" ry="30" fill="#fff" stroke="#a99f90" stroke-width="2.5"/>
+  <text x="720" y="66" text-anchor="middle" font-size="11.5" fill="#3a3630">&#8220;Words? I just grab</text>
+  <text x="720" y="82" text-anchor="middle" font-size="11.5" fill="#3a3630">the nearest crate.&#8221;</text>
+  <!-- crossed ear -->
+  <path d="M660 150 a14 14 0 1 0 0.1 0" fill="none" stroke="#3a3630" stroke-width="3"/>
+  <path d="M660 164 q0 10 -8 12" fill="none" stroke="#3a3630" stroke-width="3" stroke-linecap="round"/>
+  <line x1="638" y1="136" x2="686" y2="184" stroke="#d8503f" stroke-width="5" stroke-linecap="round"/>
+  <text x="762" y="150" font-size="12.5" fill="#3a3630">The instruction goes in&#8230;</text>
+  <text x="762" y="167" font-size="12.5" fill="#3a3630">and changes <tspan font-weight="700" fill="#a13d2d">nothing</tspan>.</text>
+  <text x="677" y="212" text-anchor="middle" font-size="12.5" fill="#a13d2d">Geometry solved the task. The words were decoration.</text>
+  <text x="677" y="238" text-anchor="middle" font-size="13" font-weight="700" fill="#a13d2d">&#10008; And no current benchmark can tell.</text>
+</svg>
+</div>
+<div class="cap">Scene 1 &mdash; the same successful episode, seen from outside and from inside. Success rates cannot distinguish obedience from coincidence.</div>
+
+<div class="takeaway"><b>The problem in one sentence:</b> every multi-robot language system today is graded on <i>whether the task got done</i> &mdash; never on <i>whether the words mattered</i>.</div>
+
+<!-- ============ 2 WHY ============ -->
+<h2><span class="n">2</span>Why teams make it urgent</h2>
+<p>For a single arm, ignoring the words is embarrassing. For a team, the words carry information that <b>cannot be recovered from looking at the scene</b> &mdash; three everyday situations show it:</p>
+
+<div class="scene">
+<svg viewBox="0 0 900 240" width="100%">
+  <!-- panel 1: identical crates -->
+  <rect x="10" y="12" width="280" height="196" rx="12" fill="#f6f2e8" stroke="#e3dccc" stroke-width="2"/>
+  <text x="150" y="36" text-anchor="middle" font-size="14" font-weight="700" fill="#2c4a66">Who takes which?</text>
+  <use href="#crate" x="40" y="52" width="44" height="40"/>
+  <use href="#crate" x="216" y="52" width="44" height="40"/>
+  <text x="62" y="110" text-anchor="middle" font-size="20" fill="#a99f90">?</text>
+  <text x="238" y="110" text-anchor="middle" font-size="20" fill="#a99f90">?</text>
+  <use href="#bot" x="90" y="128" width="50" height="54" color="#4a7fb5"/>
+  <use href="#bot" x="160" y="128" width="50" height="54" color="#e0813f"/>
+  <text x="150" y="200" text-anchor="middle" font-size="12" fill="#5b667a">Crates are identical twins.</text>
+  <text x="150" y="216" text-anchor="middle" font-size="12" font-weight="700" fill="#2c4a66">Only the words break the tie.</text>
+
+  <!-- panel 2: doorway -->
+  <rect x="310" y="12" width="280" height="196" rx="12" fill="#f6f2e8" stroke="#e3dccc" stroke-width="2"/>
+  <text x="450" y="36" text-anchor="middle" font-size="14" font-weight="700" fill="#2c4a66">Who goes first?</text>
+  <rect x="430" y="52" width="14" height="70" rx="3" fill="#8a8272"/>
+  <rect x="430" y="150" width="14" height="46" rx="3" fill="#8a8272"/>
+  <use href="#bot" x="340" y="112" width="52" height="56" color="#4a7fb5"/>
+  <use href="#bot" x="490" y="112" width="52" height="56" color="#e0813f"/>
+  <path d="M396 140 h28" stroke="#4a7fb5" stroke-width="3" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <path d="M486 140 h-28" stroke="#e0813f" stroke-width="3" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <text x="450" y="200" text-anchor="middle" font-size="12" fill="#5b667a">&#8220;Blue docks first, then orange.&#8221;</text>
+  <text x="450" y="216" text-anchor="middle" font-size="12" font-weight="700" fill="#2c4a66">Order lives only in language.</text>
+
+  <!-- panel 3: forbidden zone -->
+  <rect x="610" y="12" width="280" height="196" rx="12" fill="#f6f2e8" stroke="#e3dccc" stroke-width="2"/>
+  <text x="750" y="36" text-anchor="middle" font-size="14" font-weight="700" fill="#2c4a66">Who must stay out?</text>
+  <rect x="690" y="52" width="120" height="76" rx="8" fill="#f6d9d3" stroke="#d8503f" stroke-width="2.5" stroke-dasharray="7 5"/>
+  <text x="750" y="94" text-anchor="middle" font-size="12" font-weight="700" fill="#a13d2d">KEEP OUT</text>
+  <use href="#bot" x="660" y="138" width="50" height="54" color="#4a7fb5"/>
+  <use href="#bot" x="790" y="138" width="50" height="54" color="#e0813f"/>
+  <text x="750" y="200" text-anchor="middle" font-size="12" fill="#5b667a">The floor looks identical inside.</text>
+  <text x="750" y="216" text-anchor="middle" font-size="12" font-weight="700" fill="#2c4a66">The rule exists only in words.</text>
+</svg>
+</div>
+<div class="cap">Scene 2 &mdash; role binding, precedence, exclusion: instructions a camera cannot substitute for. Exactly these are missing from every single-arm audit.</div>
+
+<p>And the field is racing ahead: language-commanded robot <i>teams</i> are now appearing in papers monthly &mdash; all evaluated by task success alone. If their language channels are dead, we are building fleets that only <i>seem</i> commandable. That is a safety problem wearing a convenience costume.</p>
+
+<!-- ============ 3 HOW: the machine ============ -->
+<h2><span class="n">3</span>How: the machine we built</h2>
+<p>Everything runs in simulation on one GPU. Four components, drawn as they connect:</p>
+
+<div class="scene">
+<svg viewBox="0 0 900 300" width="100%">
+  <defs><marker id="sa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b667a"/></marker></defs>
+  <!-- world box -->
+  <rect x="14" y="30" width="270" height="240" rx="14" fill="#eef3f7" stroke="#4a7fb5" stroke-width="2.5"/>
+  <text x="149" y="54" text-anchor="middle" font-size="14.5" font-weight="700" fill="#2c4a66">&#9881; The world (Isaac Lab)</text>
+  <rect x="34" y="66" width="230" height="150" rx="8" fill="#fff" stroke="#c6d3de" stroke-width="2"/>
+  <g stroke="#e6ecf1" stroke-width="1.5">
+    <line x1="34" y1="96" x2="264" y2="96"/><line x1="34" y1="126" x2="264" y2="126"/><line x1="34" y1="156" x2="264" y2="156"/><line x1="34" y1="186" x2="264" y2="186"/>
+    <line x1="80" y1="66" x2="80" y2="216"/><line x1="126" y1="66" x2="126" y2="216"/><line x1="172" y1="66" x2="172" y2="216"/><line x1="218" y1="66" x2="218" y2="216"/>
+  </g>
+  <rect x="52" y="72" width="22" height="20" rx="3" fill="#b9c3cd"/>
+  <rect x="190" y="160" width="22" height="20" rx="3" fill="#b9c3cd"/>
+  <circle cx="66" cy="196" r="10" fill="#fff" stroke="#3d7a52" stroke-width="3"/>
+  <circle cx="240" cy="86" r="10" fill="#fff" stroke="#3d7a52" stroke-width="3"/>
+  <use href="#bot" x="130" y="100" width="34" height="36" color="#4a7fb5"/>
+  <use href="#bot" x="170" y="100" width="34" height="36" color="#e0813f"/>
+  <text x="149" y="238" text-anchor="middle" font-size="11.5" fill="#5b667a">8,192 of these little worlds run at once</text>
+  <text x="149" y="256" text-anchor="middle" font-size="11.5" fill="#5b667a">&mdash; 390,000 robot-steps every second</text>
+
+  <!-- language pipeline -->
+  <rect x="320" y="30" width="250" height="112" rx="14" fill="#f2f7f3" stroke="#3d7a52" stroke-width="2.5"/>
+  <text x="445" y="54" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3d7a52">&#128172; The words (frozen)</text>
+  <path d="M338 72 h120 a7 7 0 0 1 7 7 v16 a7 7 0 0 1 -7 7 h-98 l-10 10 v-10 h-12 a7 7 0 0 1 -7 -7 v-16 a7 7 0 0 1 7 -7 z" fill="#fff" stroke="#5b667a" stroke-width="2"/>
+  <text x="401" y="92" text-anchor="middle" font-size="10.5" fill="#3a3630">&#8220;blue takes the left&#8230;&#8221;</text>
+  <line x1="470" y1="88" x2="492" y2="88" stroke="#5b667a" stroke-width="2.5" marker-end="url(#sa)"/>
+  <rect x="496" y="72" width="58" height="34" rx="6" fill="#fff" stroke="#3d7a52" stroke-width="2"/>
+  <text x="525" y="87" text-anchor="middle" font-size="9.5" fill="#3a3630">number code</text>
+  <text x="525" y="99" text-anchor="middle" font-size="9.5" fill="#3a3630">[0.2, &#8722;0.7 &#8230;]</text>
+  <text x="445" y="128" text-anchor="middle" font-size="11" fill="#5b667a">encoded once, cached &mdash; never trained, so it cannot cheat</text>
+
+  <!-- policy brain -->
+  <rect x="320" y="158" width="250" height="112" rx="14" fill="#fdf3ea" stroke="#e0813f" stroke-width="2.5"/>
+  <text x="445" y="182" text-anchor="middle" font-size="14.5" font-weight="700" fill="#b0621d">&#129504; The team brain (trained)</text>
+  <path d="M400 200 q-18 10 -12 26 q-16 6 -2 20 q8 12 26 6 q10 12 26 4 q16 8 24 -6 q16 2 12 -18 q10 -14 -8 -22 q-4 -14 -22 -10 q-12 -10 -24 0 q-14 -6 -20 0" fill="#fff" stroke="#b0621d" stroke-width="2.5"/>
+  <text x="446" y="230" text-anchor="middle" font-size="10.5" fill="#3a3630">small MAPPO network</text>
+  <text x="446" y="244" text-anchor="middle" font-size="10.5" fill="#3a3630">one shared brain, all robots</text>
+
+  <!-- audit bench -->
+  <rect x="606" y="30" width="280" height="240" rx="14" fill="#f5f2f8" stroke="#7d5f96" stroke-width="2.5"/>
+  <text x="746" y="54" text-anchor="middle" font-size="14.5" font-weight="700" fill="#6a4a7e">&#128269; The audit bench (ours)</text>
+  <rect x="626" y="66" width="240" height="56" rx="8" fill="#fff" stroke="#cbbcd8" stroke-width="2"/>
+  <text x="746" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#3a3630">Certificate stamp</text>
+  <text x="746" y="106" text-anchor="middle" font-size="10.5" fill="#5b667a">&#8220;language provably NEEDED here&#8221;</text>
+  <rect x="626" y="132" width="240" height="56" rx="8" fill="#fff" stroke="#cbbcd8" stroke-width="2"/>
+  <text x="746" y="154" text-anchor="middle" font-size="12" font-weight="700" fill="#3a3630">Twin-world comparator</text>
+  <text x="746" y="172" text-anchor="middle" font-size="10.5" fill="#5b667a">swap the words, diff the behaviour</text>
+  <rect x="626" y="198" width="240" height="56" rx="8" fill="#fff" stroke="#cbbcd8" stroke-width="2"/>
+  <text x="746" y="220" text-anchor="middle" font-size="12" font-weight="700" fill="#3a3630">Listening meter (CSI)</text>
+  <text x="746" y="238" text-anchor="middle" font-size="10.5" fill="#5b667a">0 = deaf &#183; high = obeying the words</text>
+
+  <!-- arrows -->
+  <line x1="288" y1="120" x2="316" y2="96" stroke="#5b667a" stroke-width="2.5" marker-end="url(#sa)"/>
+  <line x1="445" y1="146" x2="445" y2="154" stroke="#5b667a" stroke-width="2.5" marker-end="url(#sa)"/>
+  <path d="M320 214 C 300 214, 296 190, 288 178" stroke="#5b667a" stroke-width="2.5" fill="none" marker-end="url(#sa)"/>
+  <line x1="574" y1="150" x2="602" y2="150" stroke="#5b667a" stroke-width="2.5" marker-end="url(#sa)"/>
+  <text x="300" y="70" font-size="10" fill="#5b667a" transform="rotate(-40 300 70)">what robots see</text>
+  <text x="292" y="212" font-size="10" fill="#5b667a" transform="rotate(38 292 212)">moves</text>
+</svg>
+</div>
+<div class="cap">Scene 3 &mdash; the component diagram. Only the orange brain is ever trained; the words stay frozen, and the purple bench never touches either &mdash; it only watches.</div>
+
+<!-- ============ 4 certificate ============ -->
+<h2><span class="n">4</span>How: the certificate &mdash; proving the words are needed</h2>
+<p>Before accusing any robot of not listening, we must prove the task <i>requires</i> listening. Our trick: train a <b>spy with perfect vision but no ears</b>.</p>
+
+<div class="scene">
+<svg viewBox="0 0 900 240" width="100%">
+  <rect x="14" y="16" width="560" height="204" rx="14" fill="#f6f2e8" stroke="#e3dccc" stroke-width="2"/>
+  <text x="294" y="42" text-anchor="middle" font-size="14.5" font-weight="700" fill="#2c4a66">The blindfolded oracle</text>
+  <!-- oracle bot with blindfold over "ears": headphones crossed -->
+  <use href="#bot" x="60" y="70" width="90" height="96" color="#8a8272"/>
+  <rect x="58" y="102" width="96" height="16" rx="8" fill="#2c4a66"/>
+  <text x="106" y="114" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">NO WORDS</text>
+  <text x="106" y="186" text-anchor="middle" font-size="11.5" fill="#5b667a">sees the WHOLE map,</text>
+  <text x="106" y="202" text-anchor="middle" font-size="11.5" fill="#5b667a">every robot, every crate</text>
+  <!-- question -->
+  <path d="M180 110 h60" stroke="#5b667a" stroke-width="3" stroke-linecap="round"/>
+  <text x="210" y="100" text-anchor="middle" font-size="11" fill="#5b667a">asked:</text>
+  <rect x="248" y="76" width="150" height="66" rx="10" fill="#fff" stroke="#5b667a" stroke-width="2"/>
+  <text x="323" y="102" text-anchor="middle" font-size="12" fill="#3a3630">&#8220;Guess who takes</text>
+  <text x="323" y="120" text-anchor="middle" font-size="12" fill="#3a3630">which crate.&#8221;</text>
+  <!-- coin -->
+  <circle cx="470" cy="108" r="40" fill="#f4dfa9" stroke="#c9a94e" stroke-width="3.5"/>
+  <text x="470" y="103" text-anchor="middle" font-size="16" font-weight="700" fill="#8a6d1e">50 : 50</text>
+  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#8a6d1e">pure coin flip</text>
+  <text x="294" y="186" text-anchor="middle" font-size="12" font-weight="700" fill="#3d7a52">If even the all-seeing spy can only flip a coin,</text>
+  <text x="294" y="204" text-anchor="middle" font-size="12" font-weight="700" fill="#3d7a52">the answer truly lives in the words alone.</text>
+
+  <!-- stamp -->
+  <g transform="rotate(-8 746 118)">
+    <circle cx="746" cy="118" r="74" fill="none" stroke="#3d7a52" stroke-width="5"/>
+    <circle cx="746" cy="118" r="60" fill="none" stroke="#3d7a52" stroke-width="2"/>
+    <text x="746" y="102" text-anchor="middle" font-size="13" font-weight="700" fill="#3d7a52">CERTIFIED</text>
+    <text x="746" y="120" text-anchor="middle" font-size="11" fill="#3d7a52">language-necessary</text>
+    <text x="746" y="138" text-anchor="middle" font-size="10" fill="#3d7a52">task &#183; machine-checked</text>
+  </g>
+</svg>
+</div>
+<div class="cap">Scene 4 &mdash; the language-necessity certificate. If the earless spy beats the coin, the task leaked and we redesign it; the stamp is earned, never assumed. A second instrument (a &#8220;leak probe&#8221;) double-checks by trying to read the instruction out of what the robots see.</div>
+
+<!-- ============ 5 twin worlds ============ -->
+<h2><span class="n">5</span>How: the twin-world test &mdash; catching deafness in the act</h2>
+<p>Now the core experiment. We clone the world &mdash; same maze, same crates, same starting spots, even the <i>same dice rolls</i> &mdash; and change exactly one thing: the sentence.</p>
+
+<div class="scene">
+<svg viewBox="0 0 900 260" width="100%">
+  <!-- world A -->
+  <rect x="14" y="30" width="360" height="180" rx="12" fill="#eef3f7" stroke="#4a7fb5" stroke-width="2.5"/>
+  <text x="194" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#2c4a66">World A</text>
+  <path d="M34 52 h150 a8 8 0 0 1 8 8 v18 a8 8 0 0 1 -8 8 h-124 l-12 12 v-12 h-14 a8 8 0 0 1 -8 -8 v-18 a8 8 0 0 1 8 -8 z" fill="#fff" stroke="#5b667a" stroke-width="2"/>
+  <text x="109" y="74" text-anchor="middle" font-size="11.5" fill="#3a3630">&#8220;BLUE goes LEFT&#8221;</text>
+  <use href="#bot" x="150" y="96" width="46" height="50" color="#4a7fb5"/>
+  <use href="#bot" x="210" y="96" width="46" height="50" color="#e0813f"/>
+  <use href="#crate" x="40" y="150" width="40" height="36"/>
+  <use href="#crate" x="320" y="150" width="40" height="36"/>
+  <path d="M168 148 C 120 158, 90 162, 72 164" stroke="#4a7fb5" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M240 148 C 288 158, 316 162, 330 164" stroke="#e0813f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- world B -->
+  <rect x="526" y="30" width="360" height="180" rx="12" fill="#eef3f7" stroke="#4a7fb5" stroke-width="2.5"/>
+  <text x="706" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#2c4a66">World B &mdash; identical, except&#8230;</text>
+  <path d="M546 52 h160 a8 8 0 0 1 8 8 v18 a8 8 0 0 1 -8 8 h-134 l-12 12 v-12 h-14 a8 8 0 0 1 -8 -8 v-18 a8 8 0 0 1 8 -8 z" fill="#fdf0e5" stroke="#e0813f" stroke-width="2.5"/>
+  <text x="626" y="74" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b0621d">&#8220;BLUE goes RIGHT&#8221;</text>
+  <use href="#bot" x="662" y="96" width="46" height="50" color="#4a7fb5"/>
+  <use href="#bot" x="722" y="96" width="46" height="50" color="#e0813f"/>
+  <use href="#crate" x="552" y="150" width="40" height="36"/>
+  <use href="#crate" x="832" y="150" width="40" height="36"/>
+  <text x="706" y="176" text-anchor="middle" font-size="16" font-weight="700" fill="#6a4a7e">&#8230;which way do they go now?</text>
+
+  <!-- magnifying glass between -->
+  <circle cx="450" cy="110" r="34" fill="#fff" stroke="#6a4a7e" stroke-width="5"/>
+  <line x1="474" y1="134" x2="498" y2="158" stroke="#6a4a7e" stroke-width="8" stroke-linecap="round"/>
+  <text x="450" y="106" text-anchor="middle" font-size="10" fill="#6a4a7e" font-weight="700">compare</text>
+  <text x="450" y="119" text-anchor="middle" font-size="10" fill="#6a4a7e" font-weight="700">footprints</text>
+
+  <text x="450" y="238" text-anchor="middle" font-size="13" fill="#3a3630">Paths swap &#8594; the team <tspan font-weight="700" fill="#3d7a52">listened</tspan>. &nbsp;&nbsp; Identical footprints &#8594; the team is <tspan font-weight="700" fill="#a13d2d">deaf</tspan> &mdash; caught with zero doubt, because nothing else differed.</text>
+</svg>
+</div>
+<div class="cap">Scene 5 &mdash; the twin-world (counterfactual) test. Because even the dice are copied, any behaviour difference can only have come from the words. The CSI meter turns this into a number by comparing the word-swap effect against ordinary luck.</div>
+
+<!-- ============ 6 expected outcomes ============ -->
+<h2><span class="n">6</span>What we expect to find</h2>
+<p>Our pre-registered bet is that today&#8217;s teams are <b>half-listeners</b> &mdash; and the two halves split in a very specific, very teachable way:</p>
+
+<div class="scene">
+<svg viewBox="0 0 900 250" width="100%">
+  <!-- outcome 1 -->
+  <rect x="14" y="16" width="425" height="200" rx="12" fill="#f2f7f3" stroke="#7fae8d" stroke-width="2.5"/>
+  <text x="226" y="42" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3d7a52">&#8220;WHO takes WHICH&#8221; &mdash; they listen</text>
+  <use href="#bot" x="120" y="66" width="54" height="58" color="#4a7fb5"/>
+  <use href="#bot" x="260" y="66" width="54" height="58" color="#e0813f"/>
+  <use href="#crate" x="60" y="122" width="42" height="38"/>
+  <use href="#crate" x="336" y="122" width="42" height="38"/>
+  <path d="M140 122 C 110 132, 95 136, 84 138" stroke="#4a7fb5" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M300 122 C 330 132, 344 136, 352 138" stroke="#e0813f" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <circle cx="226" cy="150" r="20" fill="#3d7a52"/>
+  <path d="M216 150 l7 8 l14 -16" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="226" y="192" text-anchor="middle" font-size="11.5" fill="#3d7a52">Swap the words &#8594; assignments swap.</text>
+  <text x="226" y="208" text-anchor="middle" font-size="11.5" fill="#3d7a52">Role instructions are genuinely obeyed.</text>
+
+  <!-- outcome 2 -->
+  <rect x="461" y="16" width="425" height="200" rx="12" fill="#fbeeea" stroke="#d8a396" stroke-width="2.5"/>
+  <text x="673" y="42" text-anchor="middle" font-size="14.5" font-weight="700" fill="#a13d2d">&#8220;WHO goes FIRST&#8221; &mdash; deaf, but lucky</text>
+  <rect x="662" y="60" width="12" height="52" rx="3" fill="#8a8272"/>
+  <rect x="662" y="132" width="12" height="40" rx="3" fill="#8a8272"/>
+  <use href="#botsad" x="540" y="88" width="52" height="56" color="#4a7fb5"/>
+  <use href="#bot" x="740" y="88" width="52" height="56" color="#e0813f"/>
+  <path d="M596 116 h44" stroke="#4a7fb5" stroke-width="3" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <path d="M736 116 h-44" stroke="#e0813f" stroke-width="3" stroke-linecap="round" stroke-dasharray="5 4"/>
+  <circle cx="673" cy="150" r="20" fill="#a13d2d"/>
+  <line x1="664" y1="141" x2="682" y2="159" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="682" y1="141" x2="664" y2="159" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+  <text x="673" y="192" text-anchor="middle" font-size="11.5" fill="#a13d2d">Swap &#8220;first&#8221; and &#8220;last&#8221; &#8594; nothing changes:</text>
+  <text x="673" y="208" text-anchor="middle" font-size="11.5" fill="#a13d2d">collision-avoidance already queues them up by luck.</text>
+</svg>
+</div>
+<div class="cap">Scene 6 &mdash; the predicted dissociation. Both teams score near-perfect task success; only the twin-world test exposes that the right team never heard the ordering instruction at all.</div>
+
+<div class="takeaway"><b>If the bet lands:</b> the paper delivers the first proof that a robot team can obey half its orders and ignore the rest while acing every benchmark &mdash; plus the certified tasks and the listening meter any future paper can use to check theirs. <b>If the bet fails</b> (teams listen everywhere, or nowhere): the instruments still stand, the pre-registration turns the surprise into an honest headline, and the comparison of the four language-feeding designs becomes the story. Either world produces the paper.</div>
+
+<p style="margin-top:14px">And after the paper: the same bench becomes the diagnostic for the follow-up everyone will want &mdash; not just <i>measuring</i> whether teams listen, but <i>training</i> them until they do.</p>
+
+<div style="border-top:2px solid #e3dccc; margin-top:24px; padding-top:8px; font-size:12px; color:#8a8272;">
+Team Listen &middot; picture-story companion &middot; deeper companions: Team_Listen_Briefing.pdf (facts &amp; status) &middot; Paper_Structure.html (the paper&#8217;s skeleton) &middot; September 2026
+</div>
+
+</div>
+</body>
+</html>
