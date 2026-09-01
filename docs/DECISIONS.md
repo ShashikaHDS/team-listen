@@ -2,6 +2,29 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-02 - Round 2 falsifies spawn-distance curriculum; round 3 targets credit-propagation depth
+
+Round-2 mixtures (PILOT_RESULTS addendum 5): certified E[C] ~ 0 at every
+stage while train-mixture E[C] tracks the easy-row share exactly - with
+swaps removed, rehearsal continuous, and a 70%-certified training
+majority. Together with round 1 this FALSIFIES spawn-distance curriculum
+(hard-swap and annealed) as the route to certified competence. The
+competence-vs-approach-length profile is a cliff, which fits the 5090's
+mechanism (ii) precisely: rollouts=16 gives a 16-step GAE window, and
+phase-1 latch sequences fit INSIDE it while certified approaches (4-14
+steps per robot plus conflict detours, jointly longer) do not - terminal
+credit then only propagates through slow value bootstrapping.
+
+ROUND 3 (adopting the 5090's cheapest-first nominee): rollouts-depth
+probe on the FLAT CERTIFIED bank, NO curriculum - rollouts in {32, 64},
+2 seeds each, ratified config otherwise, standard budget. If any cell
+reaches E[C] >= 0.9 the campaign runs with that rollouts value and the
+curriculum machinery is DROPPED from the training recipe entirely
+(retained in-repo as the falsification record for the paper). Mechanism
+(i) rides along free: branch-step entropy vs approach distance computed
+from existing round-1/2 checkpoints via eval_stage_checkpoints.py.
+Memory check: 4x rollout buffer at 8192 envs remains well inside 32 GB.
+
 ## 2026-09-01 - Curriculum round 1: hypothesis confirmed, transfer fails; round 2 = annealed mixtures
 
 Probe (PILOT_RESULTS.md addendum 4): phase-1 E[C] 0.69 in 25M steps
