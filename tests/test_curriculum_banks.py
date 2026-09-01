@@ -107,6 +107,48 @@ def test_bad_window_rejected():
                 assert e.code != 0
 
 
+def test_curriculum_stamp_and_loader_roundtrip():
+    """5090 integration fix: the production loader refused curriculum banks
+    (delta_gap outside the certified [-6, 6], spec 3.1).  Curriculum banks
+    now carry the SHA-covered "curriculum_near_window" payload stamp and
+    load with a relaxed geometric sanity cap; an UNSTAMPED bank with the
+    same wide delta_gap is still refused, and the stamp never appears on
+    the certified path (byte-identity preserved)."""
+    from tasks.team_listen import scenario_bank
+
+    with tempfile.TemporaryDirectory() as tmp:
+        _, path = _build(tmp, 1, 3, "stamproundtrip")
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+        assert payload.get("curriculum_near_window") == [1, 3]
+        assert int(payload["delta_gap"].long().abs().max()) > 6, \
+            "smoke bank unexpectedly within the certified range; widen K"
+        bank = scenario_bank.load_bank(path)          # must NOT refuse
+        assert bank.meta["curriculum_near_window"] == [1, 3]
+
+        # strip the stamp -> the certified gate must refuse the same data
+        del payload["curriculum_near_window"]
+        stripped = os.path.join(tmp, "scenario_bank_RoleBinding_00.pt")
+        torch.save(payload, stripped)
+        try:
+            scenario_bank.load_bank(stripped)
+        except RuntimeError as exc:
+            assert "delta_gap" in str(exc)
+        else:
+            raise AssertionError("unstamped wide-delta_gap bank loaded")
+
+        # certified builder path stays stamp-free
+        rc = bsb.main(["--variant", "RoleBinding", "--num-scenarios",
+                       str(K), "--seed", "77", "--out-dir", tmp, "--quiet"])
+        assert rc == 0
+        cert = [f for f in os.listdir(tmp)
+                if f.startswith("scenario_bank_RoleBinding_")
+                and f.endswith(".pt") and "stamproundtrip" not in f
+                and f != "scenario_bank_RoleBinding_00.pt"]
+        cp = torch.load(os.path.join(tmp, cert[0]), map_location="cpu",
+                        weights_only=False)
+        assert "curriculum_near_window" not in cp
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items())
            if k.startswith("test_") and callable(v)]

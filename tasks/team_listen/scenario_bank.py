@@ -187,8 +187,17 @@ def _check_values(path, payload, k):
             _fail(path, "%s has values outside {0, 1}" % key)
     if not bool((payload["slip"].long() <= NO_SLIP).all()):
         _fail(path, "slip has values > NO_SLIP=%d" % NO_SLIP)
-    if not bool((payload["delta_gap"].long().abs() <= 6).all()):
-        _fail(path, "delta_gap outside [-6, 6] (spec 3.1)")
+    # Certified banks: delta_gap in [-6, 6] (spec 3.1).  Training-only
+    # CURRICULUM banks (OPEN(8), DECISIONS.md) carry the SHA-covered
+    # "curriculum_near_window" stamp and legitimately exceed it (near-window
+    # spawn asymmetry); they keep a geometric sanity cap only.  A bank
+    # WITHOUT the stamp is held to the certified range unchanged.
+    dg_cap = 6 if payload.get("curriculum_near_window") is None \
+        else 2 * (L.R + L.C)
+    if not bool((payload["delta_gap"].long().abs() <= dg_cap).all()):
+        _fail(path, "delta_gap outside [-%d, %d] (spec 3.1%s)"
+              % (dg_cap, dg_cap,
+                 "" if dg_cap == 6 else "; curriculum sanity cap"))
     if not bool((payload["instr_switch_time"].long() >= -1).all()):
         _fail(path, "instr_switch_time below -1")
 

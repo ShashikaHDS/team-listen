@@ -863,6 +863,9 @@ def build_bank(variant, k, seed_list, epsilon=DEFAULT_EPSILON,
         "leaky": False,                 # spec 4.1: leaky banks come ONLY
         "leak_rho": 0.0,                # from scripts/build_leaky_bank.py
         "builder": "scripts/build_scenario_bank.py",
+        # NOTE: curriculum banks additionally carry "curriculum_near_window"
+        # (inserted below, conditionally: the certified path must stay
+        # byte-identical, so the key is ABSENT rather than None there).
         "seed_derivation": ("sha256('team_listen_bank/<seed>/<row>')[:8] "
                             "big-endian mod 2**63"),
         "leak_bit_rule": (
@@ -876,6 +879,12 @@ def build_bank(variant, k, seed_list, epsilon=DEFAULT_EPSILON,
             "(d(r0,left)+d(r1,right)) - (d(r0,right)+d(r1,left)), "
             "capped to +-1 per scenario (spec 2.1 [FIXED])"),
     }
+    if RB_NEAR_WINDOW is not None:
+        # Training-only curriculum bank (OPEN(8), DECISIONS.md): stamp is
+        # part of the SHA-covered payload, so a curriculum bank cannot
+        # masquerade as a certified one without changing its hash.  The
+        # loader relaxes ONLY the delta_gap range under this stamp.
+        payload["curriculum_near_window"] = list(RB_NEAR_WINDOW)
     return payload
 
 
