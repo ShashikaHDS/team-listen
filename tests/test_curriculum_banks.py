@@ -149,6 +149,62 @@ def test_curriculum_stamp_and_loader_roundtrip():
         assert "curriculum_near_window" not in cp
 
 
+def test_mixture_banks_composition_determinism_stamp_loader():
+    """Round-2 mixture builder (scripts/build_mixture_banks.py): per-stage
+    composition counts match the pre-declared ratios; deterministic rebuild
+    is SHA-identical; the curriculum stamp is present; the production
+    loader accepts the result; certified EVAL rows ride along as split=1
+    and never enter the train split."""
+    import build_mixture_banks as bmx
+    from tasks.team_listen import scenario_bank
+
+    with tempfile.TemporaryDirectory() as tmp:
+        # tiny sources: three phase smokes + one certified smoke
+        for tag, lo, hi in (("phase1", 1, 3), ("phase2", 3, 6),
+                            ("phase3", 6, 10)):
+            _build(tmp, lo, hi, tag)
+        rc = bsb.main(["--variant", "RoleBinding", "--num-scenarios", "32",
+                       "--seed", "88", "--out-dir", tmp, "--quiet"])
+        assert rc == 0
+        cert = [f for f in os.listdir(tmp)
+                if f.startswith("scenario_bank_RoleBinding_")
+                and f.endswith(".pt") and "phase" not in f]
+        assert len(cert) == 1
+        cert_path = os.path.join(tmp, cert[0])
+
+        out1, out2 = os.path.join(tmp, "o1"), os.path.join(tmp, "o2")
+        for out in (out1, out2):
+            rc = bmx.main(["--src-dir", tmp, "--certified", cert_path,
+                           "--out-dir", out, "--k-train", "16"])
+            assert rc == 0
+
+        shas = {}
+        for out in (out1, out2):
+            for f in sorted(os.listdir(out)):
+                if f.endswith(".pt"):
+                    tag = f.split("_")[3]
+                    shas.setdefault(tag, []).append(f)
+        for tag, files in shas.items():
+            assert len(files) == 2 and files[0] == files[1], \
+                "rebuild not SHA-identical for %s: %r" % (tag, files)
+
+        for tag, ratios in bmx.STAGES:
+            path = os.path.join(out1, shas[tag][0])
+            bank = scenario_bank.load_bank(path)      # production gate
+            meta = bank.meta
+            assert meta["curriculum_near_window"] == bmx.STAMP
+            mix = meta["mixture"]
+            assert mix["stage"] == tag
+            counts = mix["train_counts"]
+            assert sum(counts.values()) == 16
+            expect = bmx._alloc(16, ratios)
+            assert list(counts.values()) == expect, (tag, counts, expect)
+            n_train = int((bank.split == 0).sum())
+            n_eval = int((bank.split == 1).sum())
+            assert n_train == 16
+            assert n_eval == mix["certified_eval_rows_appended"] > 0
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items())
            if k.startswith("test_") and callable(v)]
