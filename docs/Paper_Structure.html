@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Team Listen — Paper Structure</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px; line-height: 1.45; color: #21272e; margin: 0; background: #eef1f4; }
+  .page { max-width: 1060px; margin: 0 auto; padding: 26px 30px 40px 30px; background: #fff; }
+  .banner { background: #123c5c; color: #fff; border-radius: 10px; padding: 22px 26px; margin-bottom: 22px; }
+  .banner h1 { margin: 0 0 4px 0; font-size: 26px; }
+  .banner .sub { color: #bcd6ea; font-style: italic; }
+  h2 { font-size: 20px; color: #123c5c; margin: 30px 0 8px 0; }
+  h2 .num { display: inline-block; background: #e07b39; color: #fff; border-radius: 6px; padding: 0 9px; margin-right: 8px; }
+  p { margin: 0 0 9px 0; }
+  .fig { margin: 10px 0 6px 0; }
+  .cap { font-size: 12.5px; color: #5a6570; margin: 4px 0 14px 0; text-align: center; }
+  svg text { font-family: 'Segoe UI', Arial, sans-serif; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .sec { border: 1px solid #d6dde3; border-radius: 8px; padding: 10px 12px; background: #fbfcfd; border-left: 5px solid #9fb8c9; }
+  .sec.pA { border-left-color: #6b7f93; } .sec.pB { border-left-color: #17877b; }
+  .sec.pC { border-left-color: #b0621d; } .sec.pD { border-left-color: #1d557e; }
+  .sec.pE { border-left-color: #6a4a7e; }
+  .sec h3 { margin: 0 0 3px 0; font-size: 14.5px; color: #123c5c; }
+  .sec p { font-size: 13px; margin: 0 0 4px 0; color: #39434d; }
+  .chip { display: inline-block; font-size: 11px; background: #eef2f6; color: #1d557e; border: 1px solid #c9d6e2; border-radius: 10px; padding: 0 8px; margin-right: 4px; }
+  .legend span { display: inline-block; font-size: 12.5px; margin-right: 14px; }
+  .dot { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="banner">
+  <h1>The Paper, Visually</h1>
+  <div class="sub">Working title: &#8220;Coordination Sensitivity: A Certified Measure of Language Use in Multi-Agent Policies&#8221; &nbsp;&middot;&nbsp; target: IEEE Transactions on Artificial Intelligence &nbsp;&middot;&nbsp; 14 sections in 5 parts</div>
+</div>
+
+<h2><span class="num">1</span>The spine — 14 sections, 5 parts</h2>
+<p>The paper reads as five parts: open the problem, build the instruments, prove they are the <i>right</i> instruments, run the audit, close honestly. Note the deliberate order — the metric is defined and defended <b>before</b> any experimental result appears, so no reviewer can call the findings metric-shopping.</p>
+
+<div class="fig">
+<svg viewBox="0 0 1000 235" width="100%">
+  <defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8aa2b5"/></marker></defs>
+  <!-- part boxes -->
+  <g font-size="12">
+    <rect x="10"  y="30" width="150" height="150" rx="9" fill="#eef1f4" stroke="#6b7f93" stroke-width="2"/>
+    <text x="85" y="20" text-anchor="middle" font-weight="700" fill="#6b7f93" font-size="13">A · OPENING</text>
+    <rect x="22" y="44" width="126" height="36" rx="5" fill="#fff" stroke="#b9c3cd"/><text x="85" y="59" text-anchor="middle" font-weight="700" fill="#123c5c">I</text><text x="85" y="73" text-anchor="middle" fill="#39434d">Title · Abstract</text>
+    <rect x="22" y="88" width="126" height="36" rx="5" fill="#fff" stroke="#b9c3cd"/><text x="85" y="103" text-anchor="middle" font-weight="700" fill="#123c5c">II</text><text x="85" y="117" text-anchor="middle" fill="#39434d">Intro + contributions</text>
+    <rect x="22" y="132" width="126" height="36" rx="5" fill="#fff" stroke="#b9c3cd"/><text x="85" y="147" text-anchor="middle" font-weight="700" fill="#123c5c">III</text><text x="85" y="161" text-anchor="middle" fill="#39434d">Related work</text>
+
+    <rect x="190" y="30" width="180" height="196" rx="9" fill="#f2f7f5" stroke="#17877b" stroke-width="2"/>
+    <text x="280" y="20" text-anchor="middle" font-weight="700" fill="#17877b" font-size="13">B · THE INSTRUMENTS</text>
+    <rect x="202" y="44" width="156" height="36" rx="5" fill="#fff" stroke="#b9cdc6"/><text x="280" y="59" text-anchor="middle" font-weight="700" fill="#123c5c">IV</text><text x="280" y="73" text-anchor="middle" fill="#39434d">Formal problem + do(&#8203;instruction)</text>
+    <rect x="202" y="88" width="156" height="36" rx="5" fill="#fff" stroke="#b9cdc6"/><text x="280" y="103" text-anchor="middle" font-weight="700" fill="#123c5c">V</text><text x="280" y="117" text-anchor="middle" fill="#39434d">Necessity certificate</text>
+    <rect x="202" y="132" width="156" height="36" rx="5" fill="#fff" stroke="#b9cdc6"/><text x="280" y="147" text-anchor="middle" font-weight="700" fill="#123c5c">VI</text><text x="280" y="161" text-anchor="middle" fill="#39434d">CSI: definition + estimator</text>
+    <rect x="202" y="176" width="156" height="36" rx="5" fill="#fff" stroke="#b9cdc6"/><text x="280" y="191" text-anchor="middle" font-weight="700" fill="#123c5c">VII</text><text x="280" y="205" text-anchor="middle" fill="#39434d">Formal properties (propositions)</text>
+
+    <rect x="400" y="30" width="170" height="150" rx="9" fill="#fdf3ea" stroke="#b0621d" stroke-width="2"/>
+    <text x="485" y="20" text-anchor="middle" font-weight="700" fill="#b0621d" font-size="13">C · WHY THIS METRIC</text>
+    <rect x="412" y="44" width="146" height="58" rx="5" fill="#fff" stroke="#dcc4ab"/><text x="485" y="60" text-anchor="middle" font-weight="700" fill="#123c5c">VIII</text><text x="485" y="74" text-anchor="middle" fill="#39434d">Design-space ablation</text><text x="485" y="88" text-anchor="middle" fill="#7a8087" font-size="10.5">every alternative, shown failing</text>
+    <rect x="412" y="110" width="146" height="58" rx="5" fill="#fff" stroke="#dcc4ab"/><text x="485" y="126" text-anchor="middle" font-weight="700" fill="#123c5c">IX</text><text x="485" y="140" text-anchor="middle" fill="#39434d">Prior measures scored</text><text x="485" y="154" text-anchor="middle" fill="#7a8087" font-size="10.5">criticism computed, not argued</text>
+
+    <rect x="600" y="30" width="180" height="196" rx="9" fill="#f2f5fb" stroke="#1d557e" stroke-width="2"/>
+    <text x="690" y="20" text-anchor="middle" font-weight="700" fill="#1d557e" font-size="13">D · THE AUDIT</text>
+    <rect x="612" y="44" width="156" height="36" rx="5" fill="#fff" stroke="#bccadb"/><text x="690" y="59" text-anchor="middle" font-weight="700" fill="#123c5c">X</text><text x="690" y="73" text-anchor="middle" fill="#39434d">Tasks + 4 interfaces + protocol</text>
+    <rect x="612" y="88" width="156" height="36" rx="5" fill="#fff" stroke="#bccadb"/><text x="690" y="103" text-anchor="middle" font-weight="700" fill="#123c5c">XI</text><text x="690" y="117" text-anchor="middle" fill="#39434d">Main study + dissociation</text>
+    <rect x="612" y="132" width="156" height="36" rx="5" fill="#fff" stroke="#bccadb"/><text x="690" y="147" text-anchor="middle" font-weight="700" fill="#123c5c">XII</text><text x="690" y="161" text-anchor="middle" fill="#39434d">Predictive validity + repair</text>
+    <rect x="612" y="176" width="156" height="36" rx="5" fill="#fff" stroke="#bccadb"/><text x="690" y="191" text-anchor="middle" font-weight="700" fill="#123c5c">XIII</text><text x="690" y="205" text-anchor="middle" fill="#39434d">Cross-fidelity + real VLM</text>
+
+    <rect x="810" y="30" width="180" height="150" rx="9" fill="#f5f2f8" stroke="#6a4a7e" stroke-width="2"/>
+    <text x="900" y="20" text-anchor="middle" font-weight="700" fill="#6a4a7e" font-size="13">E · CLOSING</text>
+    <rect x="822" y="44" width="156" height="58" rx="5" fill="#fff" stroke="#cbbcd8"/><text x="900" y="60" text-anchor="middle" font-weight="700" fill="#123c5c">XIV</text><text x="900" y="74" text-anchor="middle" fill="#39434d">Threats to validity</text><text x="900" y="88" text-anchor="middle" fill="#39434d">Release + conclusions</text>
+    <rect x="822" y="110" width="156" height="58" rx="5" fill="#fff" stroke="#cbbcd8"/><text x="900" y="132" text-anchor="middle" fill="#39434d">Open harness, Zenodo DOI,</text><text x="900" y="146" text-anchor="middle" fill="#39434d">pre-registration + deviations log</text>
+  </g>
+  <line x1="162" y1="105" x2="186" y2="105" stroke="#8aa2b5" stroke-width="2.5" marker-end="url(#a1)"/>
+  <line x1="372" y1="105" x2="396" y2="105" stroke="#8aa2b5" stroke-width="2.5" marker-end="url(#a1)"/>
+  <line x1="572" y1="105" x2="596" y2="105" stroke="#8aa2b5" stroke-width="2.5" marker-end="url(#a1)"/>
+  <line x1="782" y1="105" x2="806" y2="105" stroke="#8aa2b5" stroke-width="2.5" marker-end="url(#a1)"/>
+</svg>
+<div class="cap">Fig. 1 — the spine. Roughly 14&ndash;15 pages in IEEE two-column format; Parts B+C are the &#8220;methodology paper&#8221; core that justifies the TAI framing.</div>
+</div>
+
+<h2><span class="num">2</span>The argument as a flowchart</h2>
+<p>Underneath the sections, the paper answers five questions in a fixed order. Each question is answered by an instrument, and each answer unlocks the next question — this is the chain a reviewer must break to reject the paper:</p>
+
+<div class="fig">
+<svg viewBox="0 0 1000 330" width="100%">
+  <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e07b39"/></marker></defs>
+  <g font-size="12.5">
+    <!-- Q boxes top row -->
+    <rect x="20" y="18" width="285" height="52" rx="9" fill="#123c5c"/>
+    <text x="162" y="40" text-anchor="middle" fill="#fff" font-weight="700">THE GAP (&#167;II&ndash;III)</text>
+    <text x="162" y="57" text-anchor="middle" fill="#bcd6ea" font-size="11.5">nobody can tell if a robot team uses its instructions</text>
+
+    <rect x="20" y="105" width="285" height="62" rx="9" fill="#fff" stroke="#17877b" stroke-width="2.5"/>
+    <text x="162" y="126" text-anchor="middle" font-weight="700" fill="#17877b">Q1 · Is language even NEEDED? (&#167;V)</text>
+    <text x="162" y="143" text-anchor="middle" fill="#39434d" font-size="11.5">blind full-state oracle must sit at 50%</text>
+    <text x="162" y="158" text-anchor="middle" fill="#7a8087" font-size="10.5">certificate + bit-exact pairing + leak probe</text>
+
+    <rect x="20" y="202" width="285" height="62" rx="9" fill="#fff" stroke="#17877b" stroke-width="2.5"/>
+    <text x="162" y="223" text-anchor="middle" font-weight="700" fill="#17877b">Q2 · Is language actually USED? (&#167;VI)</text>
+    <text x="162" y="240" text-anchor="middle" fill="#39434d" font-size="11.5">CSI: instruction-swap effect &divide; dice-reroll effect</text>
+    <text x="162" y="255" text-anchor="middle" fill="#7a8087" font-size="10.5">frozen world, only the words change</text>
+
+    <rect x="357" y="105" width="285" height="62" rx="9" fill="#fff" stroke="#b0621d" stroke-width="2.5"/>
+    <text x="499" y="126" text-anchor="middle" font-weight="700" fill="#b0621d">Q3 · Can we TRUST the number? (&#167;VII&ndash;IX)</text>
+    <text x="499" y="143" text-anchor="middle" fill="#39434d" font-size="11.5">propositions, estimator analysis, every design</text>
+    <text x="499" y="158" text-anchor="middle" fill="#39434d" font-size="11.5">alternative and prior measure shown failing</text>
+
+    <rect x="357" y="202" width="285" height="62" rx="9" fill="#fff" stroke="#1d557e" stroke-width="2.5"/>
+    <text x="499" y="223" text-anchor="middle" font-weight="700" fill="#1d557e">Q4 · What does it FIND? (&#167;X&ndash;XI)</text>
+    <text x="499" y="240" text-anchor="middle" fill="#39434d" font-size="11.5">4 interfaces &times; tasks &times; team sizes, and the</text>
+    <text x="499" y="255" text-anchor="middle" fill="#39434d" font-size="11.5">pre-registered role-binding/precedence dissociation</text>
+
+    <rect x="694" y="105" width="285" height="62" rx="9" fill="#fff" stroke="#1d557e" stroke-width="2.5"/>
+    <text x="836" y="126" text-anchor="middle" font-weight="700" fill="#1d557e">Q5 · Does it MEAN anything? (&#167;XII&ndash;XIII)</text>
+    <text x="836" y="143" text-anchor="middle" fill="#39434d" font-size="11.5">CSI predicts generalisation; a repair raises it;</text>
+    <text x="836" y="158" text-anchor="middle" fill="#39434d" font-size="11.5">verdicts survive rendering + real VLM + noise</text>
+
+    <rect x="694" y="202" width="285" height="52" rx="9" fill="#6a4a7e"/>
+    <text x="836" y="224" text-anchor="middle" fill="#fff" font-weight="700">THE CLAIM (&#167;XIV)</text>
+    <text x="836" y="241" text-anchor="middle" fill="#e3d9ec" font-size="11.5">language grounding in teams: measured, not assumed</text>
+
+    <!-- arrows -->
+    <line x1="162" y1="72" x2="162" y2="101" stroke="#e07b39" stroke-width="3" marker-end="url(#a2)"/>
+    <line x1="162" y1="169" x2="162" y2="198" stroke="#e07b39" stroke-width="3" marker-end="url(#a2)"/>
+    <line x1="307" y1="233" x2="357" y2="140 " stroke="#e07b39" stroke-width="3" marker-end="url(#a2)" opacity="0"/>
+    <path d="M307 233 C 330 233, 335 136, 353 136" stroke="#e07b39" stroke-width="3" fill="none" marker-end="url(#a2)"/>
+    <line x1="499" y1="169" x2="499" y2="198" stroke="#e07b39" stroke-width="3" marker-end="url(#a2)"/>
+    <path d="M644 233 C 667 233, 672 136, 690 136" stroke="#e07b39" stroke-width="3" fill="none" marker-end="url(#a2)"/>
+    <line x1="836" y1="169" x2="836" y2="198" stroke="#e07b39" stroke-width="3" marker-end="url(#a2)"/>
+  </g>
+</svg>
+<div class="cap">Fig. 2 — the argument chain. Instruments before findings: by the time results appear (&#167;XI), the reader has already accepted the ruler they are measured with.</div>
+</div>
+
+<h2><span class="num">3</span>Which experiment feeds which section</h2>
+<p>Every section's evidence comes from a named project milestone, so the paper is written <i>alongside</i> the experiments rather than after them — the pre-registration document literally becomes the first draft of &#167;IV&ndash;V:</p>
+
+<div class="fig">
+<svg viewBox="0 0 1000 240" width="100%">
+  <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8aa2b5"/></marker></defs>
+  <g font-size="12">
+    <!-- milestones left -->
+    <g font-weight="700">
+      <rect x="20" y="20"  width="200" height="28" rx="6" fill="#17877b"/><text x="120" y="39" text-anchor="middle" fill="#fff">M1 · certificate + gate</text>
+      <rect x="20" y="56"  width="200" height="28" rx="6" fill="#17877b"/><text x="120" y="75" text-anchor="middle" fill="#fff">M2 · CSI v1 + dissociation</text>
+      <rect x="20" y="92"  width="200" height="28" rx="6" fill="#3d9b8f"/><text x="120" y="111" text-anchor="middle" fill="#fff">M3 · full family + baselines</text>
+      <rect x="20" y="128" width="200" height="28" rx="6" fill="#3d9b8f"/><text x="120" y="147" text-anchor="middle" fill="#fff">M4 · generalisation + repair</text>
+      <rect x="20" y="164" width="200" height="28" rx="6" fill="#68b1a7"/><text x="120" y="183" text-anchor="middle" fill="#fff">M5 · cross-fidelity arm</text>
+      <rect x="20" y="200" width="200" height="28" rx="6" fill="#68b1a7"/><text x="120" y="219" text-anchor="middle" fill="#fff">M6 · release + writing</text>
+    </g>
+    <!-- sections right -->
+    <g>
+      <rect x="700" y="20"  width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="36" text-anchor="middle" fill="#123c5c">&#167;IV&ndash;V &nbsp;formalisation + certificate</text>
+      <rect x="700" y="52"  width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="68" text-anchor="middle" fill="#123c5c">&#167;VI&ndash;VIII &nbsp;CSI, properties, design space</text>
+      <rect x="700" y="84"  width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="100" text-anchor="middle" fill="#123c5c">&#167;IX&ndash;X &nbsp;prior measures + task family</text>
+      <rect x="700" y="116" width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="132" text-anchor="middle" fill="#123c5c">&#167;XI &nbsp;main study + dissociation</text>
+      <rect x="700" y="148" width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="164" text-anchor="middle" fill="#123c5c">&#167;XII &nbsp;predictive validity + repair</text>
+      <rect x="700" y="180" width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="196" text-anchor="middle" fill="#123c5c">&#167;XIII &nbsp;cross-fidelity robustness</text>
+      <rect x="700" y="212" width="280" height="24" rx="5" fill="#eef2f6" stroke="#c9d6e2"/><text x="840" y="228" text-anchor="middle" fill="#123c5c">&#167;I&ndash;III, XIV &nbsp;framing, threats, release</text>
+    </g>
+    <!-- ribbons -->
+    <g stroke-width="2.2" fill="none" stroke="#8aa2b5">
+      <path d="M222 34 C 460 34, 460 32, 696 32" marker-end="url(#a3)"/>
+      <path d="M222 70 C 400 70, 480 64, 696 64" marker-end="url(#a3)"/>
+      <path d="M222 70 C 420 70, 500 124, 696 126" marker-end="url(#a3)"/>
+      <path d="M222 106 C 430 106, 490 96, 696 96" marker-end="url(#a3)"/>
+      <path d="M222 106 C 440 106, 510 130, 696 130" marker-end="url(#a3)"/>
+      <path d="M222 142 C 450 142, 520 160, 696 160" marker-end="url(#a3)"/>
+      <path d="M222 178 C 460 178, 530 192, 696 192" marker-end="url(#a3)"/>
+      <path d="M222 214 C 460 214, 530 224, 696 224" marker-end="url(#a3)"/>
+    </g>
+  </g>
+</svg>
+<div class="cap">Fig. 3 — evidence wiring. M1&ndash;M2 (the current phase) already carry five of the fourteen sections; the writing calendar tracks this map month by month.</div>
+</div>
+
+<h2><span class="num">4</span>Built-in reviewer defense</h2>
+<p>The venue study predicted the four attacks a TAI reviewer will make. Each has a section whose job is to absorb it:</p>
+
+<div class="fig">
+<svg viewBox="0 0 1000 150" width="100%">
+  <defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6a4a7e"/></marker></defs>
+  <g font-size="11.5">
+    <g>
+      <rect x="15"  y="18" width="228" height="46" rx="8" fill="#fdecec" stroke="#c25b5b" stroke-width="1.5"/>
+      <text x="129" y="37" text-anchor="middle" font-weight="700" fill="#a13d3d">&#8220;Findings are pre-announced &mdash;</text>
+      <text x="129" y="52" text-anchor="middle" font-weight="700" fill="#a13d3d">LIBERO-Plus already said this&#8221;</text>
+      <rect x="15"  y="96" width="228" height="40" rx="8" fill="#f5f2f8" stroke="#6a4a7e" stroke-width="1.5"/>
+      <text x="129" y="113" text-anchor="middle" fill="#123c5c">&#167;IX + &#167;XI: team-only semantics; the</text>
+      <text x="129" y="127" text-anchor="middle" fill="#123c5c">dissociation does not follow from single-arm work</text>
+      <line x1="129" y1="66" x2="129" y2="92" stroke="#6a4a7e" stroke-width="2.5" marker-end="url(#a4)"/>
+    </g>
+    <g>
+      <rect x="262" y="18" width="228" height="46" rx="8" fill="#fdecec" stroke="#c25b5b" stroke-width="1.5"/>
+      <text x="376" y="37" text-anchor="middle" font-weight="700" fill="#a13d3d">&#8220;Your certificate just means</text>
+      <text x="376" y="52" text-anchor="middle" font-weight="700" fill="#a13d3d">the oracle was undertrained&#8221;</text>
+      <rect x="262" y="96" width="228" height="40" rx="8" fill="#f5f2f8" stroke="#6a4a7e" stroke-width="1.5"/>
+      <text x="376" y="113" text-anchor="middle" fill="#123c5c">&#167;V + &#167;XIV: budget-sensitivity curve, leak probe,</text>
+      <text x="376" y="127" text-anchor="middle" fill="#123c5c">planted-leak positive control must trip</text>
+      <line x1="376" y1="66" x2="376" y2="92" stroke="#6a4a7e" stroke-width="2.5" marker-end="url(#a4)"/>
+    </g>
+    <g>
+      <rect x="509" y="18" width="228" height="46" rx="8" fill="#fdecec" stroke="#c25b5b" stroke-width="1.5"/>
+      <text x="623" y="37" text-anchor="middle" font-weight="700" fill="#a13d3d">&#8220;CSI breaks when the</text>
+      <text x="623" y="52" text-anchor="middle" font-weight="700" fill="#a13d3d">denominator is tiny&#8221;</text>
+      <rect x="509" y="96" width="228" height="40" rx="8" fill="#f5f2f8" stroke="#6a4a7e" stroke-width="1.5"/>
+      <text x="623" y="113" text-anchor="middle" fill="#123c5c">&#167;VII + &#167;VIII: bounded share form is primary,</text>
+      <text x="623" y="127" text-anchor="middle" fill="#123c5c">degenerate regime handled by proposition</text>
+      <line x1="623" y1="66" x2="623" y2="92" stroke="#6a4a7e" stroke-width="2.5" marker-end="url(#a4)"/>
+    </g>
+    <g>
+      <rect x="756" y="18" width="228" height="46" rx="8" fill="#fdecec" stroke="#c25b5b" stroke-width="1.5"/>
+      <text x="870" y="37" text-anchor="middle" font-weight="700" fill="#a13d3d">&#8220;It&#8217;s simulation only &mdash;</text>
+      <text x="870" y="52" text-anchor="middle" font-weight="700" fill="#a13d3d">does any of this transfer?&#8221;</text>
+      <rect x="756" y="96" width="228" height="40" rx="8" fill="#f5f2f8" stroke="#6a4a7e" stroke-width="1.5"/>
+      <text x="870" y="113" text-anchor="middle" fill="#123c5c">&#167;XIII + &#167;XIV: verdicts preserved under rendering,</text>
+      <text x="870" y="127" text-anchor="middle" fill="#123c5c">real VLM, sensor + localisation noise; scope stated</text>
+      <line x1="870" y1="66" x2="870" y2="92" stroke="#6a4a7e" stroke-width="2.5" marker-end="url(#a4)"/>
+    </g>
+  </g>
+</svg>
+<div class="cap">Fig. 4 — predicted attacks (red) and the sections built to absorb them (purple). All four defenses are experiments or propositions, not rebuttal prose.</div>
+</div>
+
+<h2><span class="num">5</span>Section-by-section, in plain words</h2>
+<div class="legend" style="margin-bottom:6px">
+  <span><span class="dot" style="background:#6b7f93"></span>Opening</span>
+  <span><span class="dot" style="background:#17877b"></span>Instruments</span>
+  <span><span class="dot" style="background:#b0621d"></span>Why this metric</span>
+  <span><span class="dot" style="background:#1d557e"></span>The audit</span>
+  <span><span class="dot" style="background:#6a4a7e"></span>Closing</span>
+</div>
+<div class="cards">
+  <div class="sec pA"><h3>I &middot; Title, Abstract, Impact Statement</h3><p>Leads with the <i>measure</i>, not the robots — the fastest failure at TAI is being routed to a robotics journal. Contributions ordered: certificate, metric, validity, then the finding.</p><span class="chip">written M6</span><span class="chip">gated by M2/M4</span></div>
+  <div class="sec pA"><h3>II &middot; Introduction + Contributions</h3><p>The gap framed as a measurement problem: success-rate deltas conflate task difficulty with instruction sensitivity. Ends with the IEEE-style enumerated list C1&ndash;C4.</p><span class="chip">written M6</span></div>
+  <div class="sec pA"><h3>III &middot; Related Work</h3><p>Four lanes: single-arm audits, MARL evaluation protocols, metric-as-contribution papers (the HOTA genre), and language-conditioned multi-robot planning — positioning us as the missing crossing.</p><span class="chip">comparison set fixed M3</span></div>
+  <div class="sec pB"><h3>IV &middot; Formalisation + Interventional Semantics</h3><p>The language-conditioned Dec-POMDP, the conditioning interface as a formal object, and the instruction swap defined as a do-operation with everything else held fixed.</p><span class="chip">M1</span></div>
+  <div class="sec pB"><h3>V &middot; Language-Necessity Certificates</h3><p>The blind oracle as a decision procedure: hypothesis class, training budget that makes failure informative, chance-level test, and soundness statements in both directions.</p><span class="chip">M1</span></div>
+  <div class="sec pB"><h3>VI &middot; CSI: Definition + Estimator</h3><p>The metric on a named divergence over a named object, the paired-rollout estimator as an algorithm box, and the regularised bounded form.</p><span class="chip">M2</span></div>
+  <div class="sec pB"><h3>VII &middot; Formal Properties</h3><p>Numbered propositions: boundedness, degenerate-regime behaviour, invariances (with counterexamples where they fail), and what CSI &asymp; 0 does and does not entail.</p><span class="chip">M2, checked M4</span></div>
+  <div class="sec pC"><h3>VIII &middot; Design-Space Ablation</h3><p>HOTA-style: every metric design choice (divergence, normaliser, granularity, aggregation) demonstrated on stored rollouts, showing how each alternative misranks policies. Ends with CSI's own limitations.</p><span class="chip">M2&ndash;M3</span></div>
+  <div class="sec pC"><h3>IX &middot; Problems with Existing Measures</h3><p>Prior proxies (swap success-drop, blind baselines, attention scores, contrast sets) scored against &#167;VII's property list <i>on our own policies</i> — empirical criticism, not rhetoric.</p><span class="chip">M3</span></div>
+  <div class="sec pD"><h3>X &middot; Task Family, Interfaces, Protocol</h3><p>The certified tasks, instruction semantics, a taxonomy of the four interfaces along fixed axes, and the pre-registered statistical protocol.</p><span class="chip">M3</span></div>
+  <div class="sec pD"><h3>XI &middot; Main Study + the Dissociation</h3><p>Interface &times; task &times; team-size grid with IQM and bootstrap intervals; the role-binding/precedence dissociation presented as a discovery the instrument made.</p><span class="chip">M2&ndash;M3</span></div>
+  <div class="sec pD"><h3>XII &middot; Predictive Validity + Repair</h3><p>CSI rank-correlates with held-out generalisation (survives partialling out success rate — the confounder every reviewer names), plus one intervention that raises CSI and what it costs.</p><span class="chip">M4</span></div>
+  <div class="sec pD"><h3>XIII &middot; Cross-Fidelity Robustness</h3><p>Render-free training &#8594; RTX-rendered evaluation with the real 3B VLM, raycast sensing and localisation noise as equations; are verdicts and rankings preserved?</p><span class="chip">M5</span></div>
+  <div class="sec pE"><h3>XIV &middot; Threats, Reproducibility, Conclusions</h3><p>Enumerated threats (oracle undertraining, divergence sensitivity, compute scale, sim-only scope), Zenodo release with anonymous mirror, pre-registration deviations log.</p><span class="chip">M5&ndash;M6</span></div>
+  <div class="sec pE"><h3>Supplementary</h3><p>Full proofs, per-cell tables, the power analysis, bank manifests and seeds, harness documentation — everything a replicator needs, capped for TAI's supplementary limits.</p><span class="chip">M6</span></div>
+</div>
+
+<div style="border-top:1px solid #c6ced6; margin-top:22px; padding-top:8px; font-size:12px; color:#6a7480;">
+Team Listen &middot; paper structure companion to Team_Listen_Briefing.pdf &middot; sources: docs/PAPER_PLAN.md (venue evidence + outline), docs/RESEARCH_PLAN.md, docs/DECISIONS.md &middot; September 2026
+</div>
+
+</div>
+</body>
+</html>
