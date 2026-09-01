@@ -96,7 +96,10 @@ for ck in args.checkpoints:
         m.eval()
     rec = ro.run_lanes(env, policy, plan, mode="argmax", record_logits=True)
     h = entropy(rec.logits)                      # (T, E, N)
-    act = rec.active.unsqueeze(-1).float()       # (T, E, 1)
+    # expand the active mask over the agent axis BEFORE normalising: a
+    # (T, E, 1) denominator undercounts by the agent factor and doubles
+    # every reported entropy (caught: values above ln(5)).
+    act = rec.active.unsqueeze(-1).float().expand_as(h)
     k = min(args.k_steps, h.shape[0])
     early = float((h[:k] * act[:k]).sum() / act[:k].sum().clamp(min=1))
     overall = float((h * act).sum() / act.sum().clamp(min=1))
