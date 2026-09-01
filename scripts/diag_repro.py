@@ -61,6 +61,13 @@ parser.add_argument("--shaping-lambda", type=float, default=None,
                     help="override cfg.shaping_lambda (OPEN(5) pilot cells)")
 parser.add_argument("--max-lr", type=float, default=5.0e-4, dest="max_lr",
                     help="ceiling used by --mitigation lr_ceiling")
+parser.add_argument("--rollouts", type=int, default=None,
+                    help="override agent.rollouts (round-3 GAE-depth probe); "
+                         "scale --mini-batches with it to keep the minibatch "
+                         "size constant")
+parser.add_argument("--mini-batches", type=int, default=None,
+                    dest="mini_batches",
+                    help="override agent.mini_batches")
 parser.add_argument("--checkpoint", default=None,
                     help="skrl checkpoint to load before training (curriculum "
                          "phase continuation; restores model/optimizer/"
@@ -100,6 +107,11 @@ agent_cfg["seed"] = args.seed
 if args.timesteps is not None:
     agent_cfg["trainer"]["timesteps"] = args.timesteps
 agent_cfg["trainer"]["close_environment_at_exit"] = False
+if args.rollouts is not None:
+    agent_cfg["agent"]["rollouts"] = int(args.rollouts)
+    agent_cfg["memory"]["memory_size"] = -1        # keep auto (== rollouts)
+if args.mini_batches is not None:
+    agent_cfg["agent"]["mini_batches"] = int(args.mini_batches)
 if args.mitigation == "lr_ceiling":
     agent_cfg["agent"].setdefault("learning_rate_scheduler_kwargs", {})
     agent_cfg["agent"]["learning_rate_scheduler_kwargs"]["max_lr"] = args.max_lr
