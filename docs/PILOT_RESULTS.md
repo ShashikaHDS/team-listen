@@ -251,3 +251,63 @@ For the reconvene — what the evidence now constrains:
    recipe's certified trajectory a ~2-minute add-on per seed.
 
 GPU: 12 runs + 3 evals ≈ 30 min. Cumulative today ≈ 5.5 h.
+
+---
+
+## Addendum 6: round-3 rollouts-depth probe — falsified; entropy diagnostic reframes the mechanism
+
+**Training probe (order §1-2).** Flat certified training, rollouts {32, 64}
+× 2 seeds, `mini_batches` scaled {8, 16} to hold the minibatch at 32768
+(baseline 16×8192/4), ratified config otherwise, full 149.9M budget. All
+four runs clean; wall ≈ 447–450 s each (throughput insensitive to rollout
+depth); VRAM uneventful. Certified-eval trajectories (3 mid checkpoints +
+final, scripts/eval_stage_checkpoints.py):
+
+| Cell | E[C] @25% / 50% / 75% / final |
+|---|---|
+| rollouts 32, s0 | 0.000 / 0.000 / 0.000 / 0.000 |
+| rollouts 32, s1 | 0.000 / 0.000 / 0.000 / 0.001 |
+| rollouts 64, s0 | 0.000 / 0.002 / 0.004 / 0.001 |
+| rollouts 64, s1 | 0.000 / 0.001 / 0.001 / 0.003 |
+
+**Decision rule: "~0 at both" branch — stopped immediately. Mechanism (ii)
+(GAE credit-window depth) is falsified**: quadrupling the credit window
+moves certified competence by nothing.
+
+**Entropy-vs-distance diagnostic (order §3).** scripts/entropy_vs_distance.py
+(committed; early-step proxy for the branch step, limitation documented; an
+estimator bug — active-mask normalisation missing the agent axis, caught
+because reported values exceeded ln 5 — was fixed and the diagnostic rerun
+before any number below was recorded). Round-1 checkpoints, argmax, 512
+eval rows per bank:
+
+| Bank (window) | p1-competent ckpt: early-4 H / E[C] | certified-trained ckpt: early-4 H / E[C] |
+|---|---|---|
+| phase1 [1,3] | 0.897 / 0.303 | 0.305 / 0.021 |
+| phase2 [3,6] | 0.783 / 0.080 | 0.335 / 0.002 |
+| phase3 [6,10] | 0.613 / 0.010 | 0.367 / 0.002 |
+| certified [4,14] | 0.499 / 0.006 | 0.350 / 0.000 |
+
+The signature mechanism (i) predicted — entropy collapsing/dithering at
+long distance — is NOT what appears. The competent policy becomes MORE
+deterministic as distance grows while completing less, and the
+certified-trained policy is near-deterministic everywhere (all-steps H
+≈ 0.11, the parked equilibrium). The failure is confident commitment to a
+non-completing behaviour, not indecision: a stable SGD attractor.
+(Secondary observation, flagged for the eval design: the p1 checkpoint
+scores 0.303 under argmax here vs ~0.69 under training-time stochastic
+action selection — argmax-vs-sampled evaluation sensitivity worth its own
+check before any headline eval.)
+
+**Where this leaves the mechanism space.** Falsified so far: spawn-distance
+curriculum (both forms), observation preprocessing, GAE credit depth,
+LR instability (fixed separately), local discovery, forgetting, map
+visibility. Surviving: (iii) architecture/representation (OPEN(4) entity
+encoder), and — newly suggested by the entropy data — the PARKED-ATTRACTOR
+question: WHY is near-station parking a stable fixed point when the
+reward-audit says completing dominates it by ≥ 8.58 discounted reward?
+Optimality is not gradient-reachability; candidate probes for the
+reconvene, cheapest first: (a) value-function inspection at
+mouth-adjacent states (does the critic ever see the +7?); (b) targeted
+exploration at the decisive step; (c) the OPEN(4) encoder. GPU: round 3
+≈ 65 min incl. diagnostics.
