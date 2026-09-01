@@ -92,3 +92,36 @@ a curriculum that makes accidental latches common enough to learn from;
 policy exists at the current task design; the question is purely whether
 SGD can find it. GPU cost of this entire pilot + probe + baselines:
 ~80 min.
+
+---
+
+## Addendum 2: first-latch bonus implemented; compliance bound re-derived
+
+Per experiments-e1's terminal-credit work order. `FIRST_LATCH_BONUS = 2.0`
+per agent on its first latch of the episode (absorbing latch ⇒ structurally
+once), instruction-free by construction — implemented in rewards.py +
+fleet_env/cpu_env (shared `_pre_physics_step` transition mask), 4 new unit
+tests (fires once / per agent / wrong-station paid identically / zero
+instruction dependence), purity scanner 9/9 over the amended module.
+
+The compliance audit needed a genuine accounting extension, not just a re-
+run: the latch bonus is the reward's first per-agent-TIMED term, so (i) the
+closed-form plan return gains the discounted per-agent-mean latch term;
+(ii) the bound's delta now uses the **min-over-agents** per-agent
+difference (each MAPPO agent optimises its own return, so "compliance
+unambiguously optimal" must hold per agent — this is stricter than the
+mean); (iii) the timeout dominance bound rises by one undiscounted bonus
+(a never-completing plan can still latch one robot). The amendment
+strictly REDUCES the bound (compliant plans latch later; discounting), and
+the hand-arithmetic tests reproduce the audit to 1e-9 under the new
+convention (11/11).
+
+**Re-derived exact compliance bounds on the real banks (γ=0.99, λ=0.1):**
+
+| Bank | bound (min over rows × classes × agents) | mean delta | verdict |
+|---|---|---|---|
+| RoleBinding 68d025a6… | **8.583** | 8.948 | PASS (>0 with margin) |
+| Precedence 0838c7c9… | **6.629** | 8.407 | PASS (>0 with margin) |
+
+Compliance remains unambiguously optimal for every agent under the amended
+reward. Probe results follow in Addendum 3.

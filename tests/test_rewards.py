@@ -139,6 +139,7 @@ def test_constants_match_fleet_env_and_cfg():
     assert rewards.COMPLETION_BONUS == fe.COMPLETION_BONUS
     assert rewards.OUTCOME_BONUS == fe.OUTCOME_BONUS
     assert rewards.BLIND_EXPECTED_BONUS == fe.BLIND_EXPECTED_BONUS
+    assert rewards.FIRST_LATCH_BONUS == fe.FIRST_LATCH_BONUS
     # lambda/gamma defaults must equal the cfg defaults (spec 1.12; gamma
     # must in turn equal the YAML discount_factor 0.99).
     assert rewards.SHAPING_LAMBDA == TeamGridEnvCfg.shaping_lambda
@@ -490,6 +491,108 @@ def test_compliance_bound_sanity():
             - GAMMA ** 2 * rewards.COMPLETION_BONUS
             + rewards.STEP_COST * (annuity(7) - annuity(3)))
     assert abs(margin - pure) < 1e-5, (margin, pure)
+
+
+# ---------------------------------------------------------------------------
+# First-latch bonus (DECISIONS.md terminal-credit amendment)
+# ---------------------------------------------------------------------------
+
+def _latch_transition(pos, target, valid, latched, slot, time_, t):
+    """Mirror fleet_env._pre_physics_step's transition-mask construction."""
+    prev = latched.clone()
+    grid_core.latch_update(pos, target, valid, latched, slot, time_, t)
+    return latched & ~prev
+
+
+def _fresh_latch_state(E=1):
+    target = torch.tensor([[[2, 2], [9, 9], [0, 0]]],
+                          dtype=torch.int16).repeat(E, 1, 1)
+    valid = torch.tensor([[True, True, False]]).repeat(E, 1)
+    latched = torch.zeros((E, 2), dtype=torch.bool)
+    slot = torch.full((E, 2), -1, dtype=torch.int8)
+    time_ = torch.full((E, 2), -1, dtype=torch.int16)
+    return target, valid, latched, slot, time_
+
+
+def test_first_latch_fires_once_per_agent():
+    """+2.0 on each agent's FIRST latch step only; absorbing latch means the
+    transition mask (and hence the bonus) can never fire twice."""
+    target, valid, latched, slot, time_ = _fresh_latch_state()
+    t = torch.zeros(1, dtype=torch.long)
+    # step 1: robot_0 enters station 0, robot_1 is in open space
+    pos = torch.tensor([[[2, 2], [5, 5]]], dtype=torch.int16)
+    newly = _latch_transition(pos, target, valid, latched, slot, time_, t)
+    assert newly.tolist() == [[True, False]]
+    r = rewards.first_latch_reward(newly)
+    assert r[0, 0].item() == rewards.FIRST_LATCH_BONUS and r[0, 1].item() == 0.0
+    # step 2: robot_0 still on its station (no re-fire), robot_1 latches
+    pos2 = torch.tensor([[[2, 2], [9, 9]]], dtype=torch.int16)
+    newly2 = _latch_transition(pos2, target, valid, latched, slot, time_,
+                               t + 1)
+    assert newly2.tolist() == [[False, True]]
+    # step 3: both latched, nothing fires ever again
+    newly3 = _latch_transition(pos2, target, valid, latched, slot, time_,
+                               t + 2)
+    assert newly3.tolist() == [[False, False]]
+
+
+def test_first_latch_wrong_station_paid_identically():
+    """The bonus reads the latch TRANSITION only: latching onto station 1
+    (the 'wrong' one for any given instruction) pays exactly what latching
+    onto station 0 pays -- correctness stays priced by the outcome term."""
+    rs = []
+    for station_cell in ([2, 2], [9, 9]):
+        target, valid, latched, slot, time_ = _fresh_latch_state()
+        pos = torch.tensor([[station_cell, [5, 5]]], dtype=torch.int16)
+        newly = _latch_transition(pos, target, valid, latched, slot, time_,
+                                  torch.zeros(1, dtype=torch.long))
+        assert newly[0, 0].item() is True or bool(newly[0, 0])
+        rs.append(rewards.first_latch_reward(newly))
+    assert torch.equal(rs[0], rs[1])
+
+
+def test_first_latch_assembly_and_instruction_independence():
+    """per_agent_rewards wires the bonus per agent, and the whole reward
+    dict is invariant to the instruction context (correct=0 vs correct=1)
+    on non-terminal steps -- the bonus adds no instruction dependence."""
+    E = 2
+    team_kwargs = dict(
+        phi=torch.tensor([-4.0, -6.0]), phi_prev=torch.tensor([-5.0, -6.0]),
+        done=torch.zeros(E, dtype=torch.bool))
+    hit_o = torch.zeros((E, 2), dtype=torch.bool)
+    hit_r = torch.zeros((E, 2), dtype=torch.bool)
+    newly = torch.tensor([[True, False], [False, False]])
+    outs = []
+    for correct in (torch.zeros(E, dtype=torch.bool),
+                    torch.ones(E, dtype=torch.bool)):
+        team = rewards.team_reward(correct=correct, **team_kwargs)
+        outs.append(rewards.per_agent_rewards(AGENTS, team, hit_o, hit_r,
+                                              newly))
+    for name in AGENTS:
+        assert torch.equal(outs[0][name], outs[1][name])
+    base = rewards.per_agent_rewards(
+        AGENTS, rewards.team_reward(
+            correct=torch.zeros(E, dtype=torch.bool), **team_kwargs),
+        hit_o, hit_r, None)
+    got = outs[0]
+    diff0 = (got["robot_0"] - base["robot_0"])
+    diff1 = (got["robot_1"] - base["robot_1"])
+    assert torch.allclose(diff0, torch.tensor([rewards.FIRST_LATCH_BONUS, 0.0]))
+    assert torch.allclose(diff1, torch.zeros(E))
+
+
+def test_first_latch_none_matches_zeros():
+    """newly_latched=None (pre-amendment call sites) is exactly the
+    all-zeros mask -- backward compatibility is byte-exact."""
+    E = 3
+    team = torch.randn(E)
+    hit_o = torch.rand((E, 2)) > 0.5
+    hit_r = torch.rand((E, 2)) > 0.5
+    a = rewards.per_agent_rewards(AGENTS, team, hit_o, hit_r, None)
+    b = rewards.per_agent_rewards(AGENTS, team, hit_o, hit_r,
+                                  torch.zeros((E, 2), dtype=torch.bool))
+    for name in AGENTS:
+        assert torch.equal(a[name], b[name])
 
 
 # ---------------------------------------------------------------------------

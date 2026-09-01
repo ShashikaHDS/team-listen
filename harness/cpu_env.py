@@ -169,6 +169,7 @@ class CPUFleetEnv:
         # step artifacts consumed by _get_rewards
         self._act = torch.zeros((E, N), dtype=torch.long, device=dev)
         self._hit_obstacle = torch.zeros((E, N), dtype=torch.bool, device=dev)
+        self._newly_latched = torch.zeros((E, N), dtype=torch.bool, device=dev)
         self._hit_robot = torch.zeros((E, N), dtype=torch.bool, device=dev)
         self._phi = torch.zeros((E,), dtype=torch.float32, device=dev)
         self._phi_prev = torch.zeros((E,), dtype=torch.float32, device=dev)

@@ -58,6 +58,9 @@ COLLISION_COST = -0.25          # per robot, per step, obstacle AND robot-robot
 COMPLETION_BONUS = 2.0          # on the terminal both-latched step
 OUTCOME_BONUS = 10.0            # +10 * Y, the ONLY instruction-dependent term
 BLIND_EXPECTED_BONUS = 5.0      # E[10*Y | C=1] for an instruction-blind policy
+FIRST_LATCH_BONUS = 2.0         # per agent, first latch of the episode
+                                # (DECISIONS.md terminal-credit amendment;
+                                #  MUST match tasks/team_listen/rewards.py)
 
 #: Environment variable set by scripts/train.py: forces cfg.debug_vis = False
 #: and arms the training-mode render guards (spec 1.13 guard set).
@@ -291,6 +294,7 @@ class TeamGridEnv(DirectMARLEnv):
         self._act = torch.zeros((E, N), dtype=torch.long, device=dev)
         self._hit_obstacle = torch.zeros((E, N), dtype=torch.bool, device=dev)
         self._hit_robot = torch.zeros((E, N), dtype=torch.bool, device=dev)
+        self._newly_latched = torch.zeros((E, N), dtype=torch.bool, device=dev)
         self._phi = torch.zeros((E,), dtype=torch.float32, device=dev)
         self._phi_prev = torch.zeros((E,), dtype=torch.float32, device=dev)
 
@@ -481,9 +485,13 @@ class TeamGridEnv(DirectMARLEnv):
 
         # latch on the POST-CONFLICT cell; t is the 0-based decision index
         # (episode_length_buf pre-increment).
+        prev_latched = self.latched[:, :N].clone()
         grid_core.latch_update(self.pos[:, :N], self.target, self.target_valid,
                                self.latched[:, :N], self.latch_slot[:, :N],
                                self.latch_time[:, :N], self.episode_length_buf)
+        # latch-state transition for the first-latch bonus (absorbing latch
+        # => True at most once per agent per episode; instruction-free).
+        self._newly_latched = self.latched[:, :N] & ~prev_latched
 
         grid_core.reveal(self.known_free, self.known_obs, self.occ,
                          self.pos[:, :N], self._reveal_offsets)
@@ -574,7 +582,9 @@ class TeamGridEnv(DirectMARLEnv):
         for i, name in enumerate(self.cfg.possible_agents):
             rewards[name] = (team
                              + COLLISION_COST * self._hit_obstacle[:, i].float()
-                             + COLLISION_COST * self._hit_robot[:, i].float())
+                             + COLLISION_COST * self._hit_robot[:, i].float()
+                             + FIRST_LATCH_BONUS
+                             * self._newly_latched[:, i].float())
 
         if self.cfg.debug_asserts and self.cfg.variant == "Precedence":
             # spec 1.11 [FIXED: dead gap code]: |dt| >= 1 is structural under

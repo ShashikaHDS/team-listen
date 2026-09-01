@@ -86,19 +86,46 @@ def _bfs(occ, src, blocked):
     return dist
 
 
-def _g_hand(T, B, M0, gamma=GAMMA, lam=LAM):
+def _g_hand(T, B, M0, gamma=GAMMA, lam=LAM, latch=None):
     """Hand return: explicit loop sum of step costs + telescoped shaping
     (== lam * M0, verified empirically by the rolled-trajectory test) +
-    discounted terminal bonus.  Independent of reward_audit's closed form."""
+    discounted terminal bonus + (DECISIONS.md first-latch amendment) the
+    per-agent MEAN of the discounted +2.0 first-latch bonuses at the
+    1-based latch steps ``latch`` -- G stays in per-agent units.
+    Independent of reward_audit's closed form."""
     steps = sum(-0.01 * gamma ** t for t in range(T))
-    return steps + lam * M0 + gamma ** (T - 1) * B
+    latch_term = (sum(2.0 * gamma ** (tau - 1) for tau in latch) / len(latch)
+                  if latch else 0.0)
+    return steps + lam * M0 + gamma ** (T - 1) * B + latch_term
+
+
+def _delta_hand(gc, gd, latch_c, latch_d, gamma=GAMMA):
+    """Per-agent-tightest delta (amendment convention): the broadcast
+    difference plus the WORST single agent's latch-bonus difference."""
+    mean_c = sum(2.0 * gamma ** (t - 1) for t in latch_c) / len(latch_c)
+    mean_d = sum(2.0 * gamma ** (t - 1) for t in latch_d) / len(latch_d)
+    per_agent = [2.0 * (gamma ** (tc - 1) - gamma ** (td - 1))
+                 for tc, td in zip(latch_c, latch_d)]
+    return (gc - mean_c) - (gd - mean_d) + min(per_agent)
 
 
 # The four hand deltas (class 0 = RB0/PR0 "robot_0 -> left / first").
-RB_DELTA = (_g_hand(3, 12.0, 6) - _g_hand(8, 2.0, 6),    # RB0: comply T=3
-            _g_hand(8, 12.0, 6) - _g_hand(3, 2.0, 6))    # RB1: comply T=8
-PR_DELTA = (_g_hand(7, 12.0, 12) - _g_hand(8, 2.0, 12),  # PR0: comply T=7
-            _g_hand(8, 12.0, 12) - _g_hand(7, 2.0, 12))  # PR1: comply T=8
+# Latch pairs by hand from the rows below: RB assignment A0 latches (3, 3),
+# A1 latches (8, 8); PR class 0 latches (5, 7) (r0 through the mouth first),
+# class 1 latches (8, 7).  The latch term does NOT cancel in the deltas:
+# the compliant plan latches later, so the amendment lowers every bound.
+RB_DELTA = (_delta_hand(_g_hand(3, 12.0, 6, latch=(3, 3)),   # RB0 comply T=3
+                        _g_hand(8, 2.0, 6, latch=(8, 8)),
+                        (3, 3), (8, 8)),
+            _delta_hand(_g_hand(8, 12.0, 6, latch=(8, 8)),   # RB1 comply T=8
+                        _g_hand(3, 2.0, 6, latch=(3, 3)),
+                        (8, 8), (3, 3)))
+PR_DELTA = (_delta_hand(_g_hand(7, 12.0, 12, latch=(5, 7)),  # PR0 comply T=7
+                        _g_hand(8, 2.0, 12, latch=(8, 7)),
+                        (5, 7), (8, 7)),
+            _delta_hand(_g_hand(8, 12.0, 12, latch=(8, 7)),  # PR1 comply T=8
+                        _g_hand(7, 2.0, 12, latch=(5, 7)),
+                        (8, 7), (5, 7)))
 
 
 # ---------------------------------------------------------------------------
@@ -204,8 +231,10 @@ def test_rb_row_bound_matches_hand_arithmetic():
     for cls in (0, 1):
         assert abs(float(audit.delta[0, cls]) - RB_DELTA[cls]) < 1e-9
         t_c, t_d = (3, 8) if cls == 0 else (8, 3)
-        assert abs(float(audit.g_comply[0, cls]) - _g_hand(t_c, 12.0, 6)) < 1e-9
-        assert abs(float(audit.g_defect[0, cls]) - _g_hand(t_d, 2.0, 6)) < 1e-9
+        assert abs(float(audit.g_comply[0, cls])
+                   - _g_hand(t_c, 12.0, 6, latch=(t_c, t_c))) < 1e-9
+        assert abs(float(audit.g_defect[0, cls])
+                   - _g_hand(t_d, 2.0, 6, latch=(t_d, t_d))) < 1e-9
     assert abs(audit.bound - min(RB_DELTA)) < 1e-9
     assert audit.argmin_class == 1                     # comply-slow is tighter
     assert audit.class_label(0, 1) == "RB1"
@@ -263,12 +292,15 @@ def test_compliant_return_matches_rolled_trajectory():
         pos, hit_obs, hit_rob = grid_core.step_positions(
             pos, act, occ, latched, (L.R, L.C))
         assert not bool(hit_obs.any()) and not bool(hit_rob.any())
+        prev_latched = latched.clone()
         grid_core.latch_update(pos, tgt, tv, latched, latch_slot,
                                latch_time, t)
+        newly = latched & ~prev_latched
         done = latched.all(dim=1)
         rew, phi_prev = rewards.compute_rewards(
             ("robot_0", "robot_1"), df, pos, tv, phi_prev, done,
-            correct=torch.ones(1), hit_obstacle=hit_obs, hit_robot=hit_rob)
+            correct=torch.ones(1), hit_obstacle=hit_obs, hit_robot=hit_rob,
+            newly_latched=newly)
         # per-team scalar broadcast: both agents identical (no collisions)
         assert torch.equal(rew["robot_0"], rew["robot_1"])
         ret += (GAMMA ** t) * float(rew["robot_0"][0])
@@ -276,7 +308,7 @@ def test_compliant_return_matches_rolled_trajectory():
     assert bool(latched.all())                         # T = 3, Y = 1 (RB0)
     assert latch_time.tolist() == [[2, 2]]
     assert abs(ret - float(audit.g_comply[0, 0])) < 1e-4   # float32 rewards
-    assert abs(ret - _g_hand(3, 12.0, 6)) < 1e-4
+    assert abs(ret - _g_hand(3, 12.0, 6, latch=(3, 3))) < 1e-4
 
 
 # ---------------------------------------------------------------------------
@@ -335,7 +367,8 @@ def test_lambda_cancels_and_gamma_respected():
                           atol=1e-12, rtol=0)
     # gamma flows through to the hand formula
     a_g95 = ra.compliance_bound(bank, gamma=0.95)
-    expect = (_g_hand(8, 12.0, 6, gamma=0.95) - _g_hand(3, 2.0, 6, gamma=0.95))
+    expect = (_g_hand(8, 12.0, 6, gamma=0.95, latch=(8, 8))
+              - _g_hand(3, 2.0, 6, gamma=0.95, latch=(3, 3)))
     assert abs(float(a_g95.delta[0, 1]) - expect) < 1e-9
 
 

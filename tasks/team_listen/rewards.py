@@ -82,6 +82,17 @@ BLIND_EXPECTED_BONUS = 5.0      # exact E[10 * Y | C=1] for a blind policy
 SHAPING_LAMBDA = 0.1            # spec 1.12 lambda (swept {0.05, 0.1, 0.2})
 REWARD_GAMMA = 0.99             # spec 1.12 gamma == YAML discount_factor
 
+#: DECISIONS.md amendment (2026-09-01, terminal-credit fix): +2.0 to an
+#: agent the FIRST time it latches in an episode.  Instruction-free by
+#: construction -- computed from the latch-state transition alone (any
+#: valid station counts; a wrong-station latch is paid identically), so
+#: correctness stays priced ONLY by the +-10*Y outcome term and the
+#: leakage-audit purity argument (spec 2.4) is untouched.  Motivated by
+#: docs/PILOT_RESULTS.md section 4: policies learned to approach stations
+#: and park, never sampling the completion payoff; this term densifies the
+#: terminal credit at the single decisive event (entering an alcove).
+FIRST_LATCH_BONUS = 2.0
+
 
 # ---------------------------------------------------------------------------
 # Individual terms
@@ -207,9 +218,22 @@ def team_reward(phi, phi_prev, done, correct, shaping_lambda=SHAPING_LAMBDA,
     return team.to(torch.float32)
 
 
-def per_agent_rewards(agent_order, team, hit_obstacle, hit_robot):
-    """Broadcast the team scalar + per-agent collision terms into the
-    MAPPO reward dict (spec 1.12).
+def first_latch_reward(newly_latched):
+    """``+FIRST_LATCH_BONUS`` per agent on the step it first latches.
+
+    ``newly_latched`` is the (E, N) bool latch-state TRANSITION mask
+    (``latched_after & ~latched_before``): it is True at most once per
+    agent per episode because ``latched`` is absorbing (spec 1.11), so the
+    bonus structurally fires once.  Reads latch state only -- never
+    instruction, assignment, or leak fields (see FIRST_LATCH_BONUS note).
+    """
+    return FIRST_LATCH_BONUS * newly_latched.float()
+
+
+def per_agent_rewards(agent_order, team, hit_obstacle, hit_robot,
+                      newly_latched=None):
+    """Broadcast the team scalar + per-agent collision and first-latch
+    terms into the MAPPO reward dict (spec 1.12 + DECISIONS.md amendment).
 
     Args:
         agent_order:  sequence of agent names, in ``cfg.possible_agents``
@@ -217,6 +241,8 @@ def per_agent_rewards(agent_order, team, hit_obstacle, hit_robot):
         team:         (E,) float team reward from ``team_reward``.
         hit_obstacle: (E, N) bool.
         hit_robot:    (E, N) bool.
+        newly_latched: (E, N) bool latch transition mask, or None (no
+                      first-latch term -- pre-amendment behaviour).
 
     Returns:
         dict name -> (E,) float32, keys in ``agent_order`` order.
@@ -225,16 +251,18 @@ def per_agent_rewards(agent_order, team, hit_obstacle, hit_robot):
     assert coll.shape[-1] == len(agent_order), (
         "collision flags cover %d agents but agent_order names %d"
         % (coll.shape[-1], len(agent_order)))
+    latch = (first_latch_reward(newly_latched) if newly_latched is not None
+             else torch.zeros_like(coll, dtype=torch.float32))
     out = {}
     for i, name in enumerate(agent_order):
-        out[name] = (team + coll[:, i]).to(torch.float32)
+        out[name] = (team + coll[:, i] + latch[:, i]).to(torch.float32)
     return out
 
 
 def compute_rewards(agent_order, dist_field, pos, target_valid, phi_prev,
                     done, correct, hit_obstacle, hit_robot,
                     shaping_lambda=SHAPING_LAMBDA, gamma=REWARD_GAMMA,
-                    use_expected=False):
+                    use_expected=False, newly_latched=None):
     """Full spec 1.12 reward assembly for one decision step.
 
     Computes Phi_t via the instruction-free ``grid_core.matching_potential``
@@ -256,6 +284,7 @@ def compute_rewards(agent_order, dist_field, pos, target_valid, phi_prev,
                       may be None when ``use_expected`` is True.
         hit_obstacle: (E, N) bool from ``grid_core.step_positions``.
         hit_robot:    (E, N) bool from ``grid_core.step_positions``.
+        newly_latched: (E, N) bool latch transition mask (or None).
 
     Returns:
         (rewards, phi): the per-agent reward dict, and the RAW (E,) float32
@@ -265,13 +294,15 @@ def compute_rewards(agent_order, dist_field, pos, target_valid, phi_prev,
     phi = grid_core.matching_potential(dist_field, pos, target_valid)
     team = team_reward(phi, phi_prev, done, correct, shaping_lambda, gamma,
                        use_expected)
-    return per_agent_rewards(agent_order, team, hit_obstacle, hit_robot), phi
+    return per_agent_rewards(agent_order, team, hit_obstacle, hit_robot,
+                             newly_latched), phi
 
 
 __all__ = [
     "STEP_COST", "COLLISION_COST", "COMPLETION_BONUS", "OUTCOME_BONUS",
     "BLIND_EXPECTED_BONUS", "SHAPING_LAMBDA", "REWARD_GAMMA",
+    "FIRST_LATCH_BONUS",
     "terminal_potential", "shaping_reward", "completion_reward",
     "outcome_reward", "collision_reward", "team_reward",
-    "per_agent_rewards", "compute_rewards",
+    "first_latch_reward", "per_agent_rewards", "compute_rewards",
 ]

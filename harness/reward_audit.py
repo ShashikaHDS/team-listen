@@ -123,7 +123,8 @@ def annuity(t, gamma):
     return (1.0 - gamma ** t) / (1.0 - gamma)
 
 
-def plan_return(t_complete, terminal_bonus, matching0, gamma, shaping_lambda):
+def plan_return(t_complete, terminal_bonus, matching0, gamma, shaping_lambda,
+                latch_times=None):
     """Exact discounted return G(T, B) of an optimal collision-free plan.
 
     Args:
@@ -133,15 +134,32 @@ def plan_return(t_complete, terminal_bonus, matching0, gamma, shaping_lambda):
                         cost, i.e. ``-Phi_0``.
         gamma:          discount in (0, 1).
         shaping_lambda: spec 1.12 lambda.
+        latch_times:    optional (..., 2) integer tensor of the two agents'
+                        1-based latch steps under this plan; when given the
+                        DECISIONS.md first-latch amendment adds
+                        ``FIRST_LATCH_BONUS * sum_i gamma^(tau_i - 1)``.
+                        Unlike the terminal bonus this term does NOT cancel
+                        in ``delta``: the compliant plan latches later
+                        (yield cost), so the amendment strictly REDUCES the
+                        compliance bound via discounting.
 
     Returns:
         float64 tensor ``STEP_COST * annuity(T) + lambda * M0
-        + gamma^(T-1) * B`` (module docstring derivation).
+        + gamma^(T-1) * B  [+ latch term]`` (module docstring derivation).
     """
     t = t_complete.to(torch.float64)
-    return (rewards.STEP_COST * annuity(t, gamma)
-            + shaping_lambda * matching0.to(torch.float64)
-            + (gamma ** (t - 1.0)) * float(terminal_bonus))
+    g = (rewards.STEP_COST * annuity(t, gamma)
+         + shaping_lambda * matching0.to(torch.float64)
+         + (gamma ** (t - 1.0)) * float(terminal_bonus))
+    if latch_times is not None:
+        # Per-agent MEAN: the broadcast G is a per-agent return, and the
+        # latch bonus is the one per-agent-timed term, so the mean keeps G
+        # in per-agent units (== either agent's return when latches are
+        # simultaneous).  The BOUND uses the stricter min-over-agents delta
+        # computed in compliance_bound, not this mean.
+        tau = latch_times.to(torch.float64)
+        g = g + rewards.FIRST_LATCH_BONUS * (gamma ** (tau - 1.0)).mean(dim=-1)
+    return g
 
 
 @dataclasses.dataclass
@@ -285,6 +303,22 @@ def compliance_bound(bank, gamma=rewards.REWARD_GAMMA,
     t_comply = torch.stack([torch.where(is_pr, t_pr_c0, t_rb_c0),
                             torch.where(is_pr, t_pr_c1, t_rb_c1)], dim=1)
     t_defect = t_comply.flip(dims=[1])       # defect == the other class's plan
+
+    # -- per-agent latch times per plan (first-latch amendment) ------------
+    # role binding, assignment A0 (r0->s0, r1->s1) / A1 (r0->s1, r1->s0):
+    lat_a0 = torch.stack([d[:, 0, 0], d[:, 1, 1]], dim=-1)       # (K, 2)
+    lat_a1 = torch.stack([d[:, 0, 1], d[:, 1, 0]], dim=-1)
+    sl = slot0_left.unsqueeze(-1)
+    lat_rb_c0 = torch.where(sl, lat_a0, lat_a1)
+    lat_rb_c1 = torch.where(sl, lat_a1, lat_a0)
+    # precedence, class 0 (r0 first): r0 latches at dm0+1, r1 at T
+    lat_pr_c0 = torch.stack([dm[:, 0] + 1, t_pr_c0], dim=-1)
+    lat_pr_c1 = torch.stack([t_pr_c1, dm[:, 1] + 1], dim=-1)
+    pr = is_pr.unsqueeze(-1)
+    lat_c0 = torch.where(pr, lat_pr_c0, lat_rb_c0)               # (K, 2)
+    lat_c1 = torch.where(pr, lat_pr_c1, lat_rb_c1)
+    lat_comply = torch.stack([lat_c0, lat_c1], dim=1)            # (K, 2cls, 2ag)
+    lat_defect = lat_comply.flip(dims=[1])
     _require(bool((t_comply <= L.T_DECISION).all())
              and bool((t_defect <= L.T_DECISION).all()),
              "a minimal completion plan exceeds T_DECISION=%d steps; the "
@@ -296,22 +330,38 @@ def compliance_bound(bank, gamma=rewards.REWARD_GAMMA,
                        d[:, 0, 1] + d[:, 1, 0]).to(torch.float64)
 
     g_comply = plan_return(t_comply, COMPLY_BONUS, m0.unsqueeze(1),
-                           gamma, shaping_lambda)
+                           gamma, shaping_lambda, latch_times=lat_comply)
     g_defect = plan_return(t_defect, DEFECT_BONUS, m0.unsqueeze(1),
-                           gamma, shaping_lambda)
+                           gamma, shaping_lambda, latch_times=lat_defect)
 
     # -- machine-check the dominance argument: completing (even wrongly)
     #    beats any never-completing plan, whose return is bounded above by
     #    full-horizon step bleed + lambda * M0 (Phi_T <= 0).
+    # a never-completing plan can still latch ONE robot (both latched ==
+    # done), so the timeout upper bound gains at most one undiscounted
+    # first-latch bonus under the amendment.
     g_timeout_ub = (rewards.STEP_COST
                     * annuity(torch.tensor(float(L.T_DECISION),
                                            dtype=torch.float64), gamma)
-                    + shaping_lambda * m0)
+                    + shaping_lambda * m0
+                    + rewards.FIRST_LATCH_BONUS)
     _require(bool((g_defect > g_timeout_ub.unsqueeze(1)).all()),
              "internal dominance check failed: a defecting completion did "
              "not beat the timeout upper bound -- formula edited?")
 
-    delta = g_comply - g_defect
+    # Bound convention (first-latch amendment): each agent's OWN return is
+    # the broadcast scalar plus ITS discounted latch bonus, so "compliance
+    # is unambiguously optimal" must hold PER AGENT.  delta is therefore
+    # the min-over-agents per-agent difference -- at least as tight as the
+    # mean-based ``g_comply - g_defect`` (equal when latches are
+    # simultaneous on both plans).
+    disc_c = torch.pow(gamma, lat_comply.to(torch.float64) - 1.0)
+    disc_d = torch.pow(gamma, lat_defect.to(torch.float64) - 1.0)
+    broadcast_delta = (
+        (g_comply - rewards.FIRST_LATCH_BONUS * disc_c.mean(dim=-1))
+        - (g_defect - rewards.FIRST_LATCH_BONUS * disc_d.mean(dim=-1)))
+    delta = broadcast_delta + rewards.FIRST_LATCH_BONUS * (
+        (disc_c - disc_d).min(dim=-1).values)
     flat_arg = int(delta.reshape(-1).argmin())
     return ComplianceAudit(
         bound=float(delta.reshape(-1)[flat_arg]),
