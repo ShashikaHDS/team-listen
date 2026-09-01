@@ -2,6 +2,62 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-01 - Curriculum round 1: hypothesis confirmed, transfer fails; round 2 = annealed mixtures
+
+Probe (PILOT_RESULTS.md addendum 4): phase-1 E[C] 0.69 in 25M steps
+CONFIRMS the joint-discovery hypothesis (completion is learnable, the
+reward works, prior failures were exploration); but hard bank swaps
+erode the skill at every transition (0.69 -> 0.40 -> 0.11 -> 0.006 on
+certified). RATIFIED: the 5090's loader-stamp mechanism (SHA-covered
+curriculum_near_window payload stamp relaxes ONLY the delta_gap cap and
+ONLY for stamped banks; certified gate and bytes unchanged;
+roundtrip-tested) - correct design. The interim-status correction note
+is acknowledged as model conduct for the deviations log.
+
+ROUND 2 DESIGN (option (a), cheapest): ANNEALED MIXTURE banks built by
+row concatenation from {phase1, phase2, phase3, certified-train} - no
+loader or env changes. Fixed pre-declared stage ratios over the same
+25/25/25/75M schedule:
+  S1 60/25/10/5, S2 30/30/25/15, S3 10/20/30/40, S4 5/10/15/70
+(percent p1/p2/p3/cert-train; deterministic interleave, stamped, mixture
+composition recorded in the manifest with source SHAs). Rationale: the
+erosion pattern (single_latch_share fell in parallel) is
+forgetting-at-swap; continuous rehearsal with a monotone certified ramp
+is the standard fix and costs bank construction only. Success criterion
+unchanged: E[C] >= 0.9 on the CERTIFIED EVAL split at end of S4.
+KLAdaptiveLR state reset at stage boundaries is retained as-is this
+round (logged as a controlled variable for a later ablation if needed).
+Implementation delegated to the 5090 session (it owns the stamp/loader
+mechanics); 3-seed probe under the standing decision rule.
+
+## 2026-09-01 - Curriculum round 1: hypothesis confirmed, transfer fails; round 2 = annealed mixtures
+
+Probe (PILOT_RESULTS.md addendum 4): phase-1 E[C] 0.69 in 25M steps
+CONFIRMS the joint-discovery hypothesis (completion is learnable, the
+reward works, prior failures were exploration); but hard bank swaps
+erode the skill at every transition (0.69 -> 0.40 -> 0.11 -> 0.006 on
+certified). RATIFIED: the 5090's loader-stamp mechanism (SHA-covered
+curriculum_near_window payload stamp relaxes ONLY the delta_gap cap and
+ONLY for stamped banks; certified gate and bytes unchanged;
+roundtrip-tested) - correct design. The interim-status correction note
+is acknowledged as model conduct for the deviations log.
+
+ROUND 2 DESIGN (option (a), cheapest): ANNEALED MIXTURE banks built by
+row concatenation from {phase1, phase2, phase3, certified-train} - no
+loader or env changes. Fixed pre-declared stage ratios over the same
+25/25/25/75M schedule:
+  S1 60/25/10/5, S2 30/30/25/15, S3 10/20/30/40, S4 5/10/15/70
+(percent p1/p2/p3/cert-train; deterministic interleave, stamped, mixture
+composition recorded in the manifest with source SHAs). Rationale: the
+erosion pattern (single_latch_share fell in parallel) is
+forgetting-at-swap; continuous rehearsal with a monotone certified ramp
+is the standard fix and costs bank construction only. Success criterion
+unchanged: E[C] >= 0.9 on the CERTIFIED EVAL split at end of S4.
+KLAdaptiveLR state reset at stage boundaries is retained as-is this
+round (logged as a controlled variable for a later ablation if needed).
+Implementation delegated to the 5090 session (it owns the stamp/loader
+mechanics); 3-seed probe under the standing decision rule.
+
 ## 2026-09-01 - OPEN(8) curriculum design (response to the latch-bonus stop)
 
 The first-latch-bonus probe stopped per rule (E[C] 0.3-0.5%): agents
