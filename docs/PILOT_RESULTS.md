@@ -204,3 +204,50 @@ Correction note for the record: an interim mid-probe status (sent before
 all runs finished) misattributed one seed's phase-1 curve to the certified
 phase due to a run-directory alignment error; the table above is from the
 complete, order-verified extraction. No pushed number was affected.
+
+---
+
+## Addendum 5: round-2 annealed mixtures — below-0.3 branch; curriculum-by-spawn-distance falsified
+
+3 seeds × stages S1–S4 (mix banks mix1_4e637c2b / mix2_4fc30969 /
+mix3_dfb447ea / mix4_184506db; ratios 60/25/10/5 → 5/10/15/70; certified
+eval rows embedded split=1 in every stage bank), 25/25/25/75M schedule,
+checkpoint continuation, ratified config. All 12 training runs + 3
+stage-eval boots clean. Stage-boundary CERTIFIED evals (argmax, 1024 rows)
+via the committed scripts/eval_stage_checkpoints.py:
+
+| Stage | train-mixture E[C] (s0/s1/s2) | CERTIFIED eval E[C] | certified share |
+|---|---|---|---|
+| S1 | 0.46 / 0.46 / 0.48 | 0.009 / 0.016 / 0.014 | 5% |
+| S2 | 0.39 / 0.38 / 0.38 | 0.021 / 0.018 / 0.019 | 15% |
+| S3 | 0.19 / 0.17 / 0.17 | 0.015 / 0.009 / 0.006 | 40% |
+| S4 | 0.05 / 0.04 / 0.05 | **0.000 / 0.001 / 0.002** | 70% |
+
+**Decision rule: below-0.3 branch — stop and reconvene.** And the numbers
+say something stronger than "mixtures also fail": train-mixture E[C]
+tracks the EASY-row share almost exactly at every stage (S1 0.60×~0.8 ≈
+0.46; S4 ≈ 0.05), i.e. the policy completes near-window rows and NOTHING
+else, with continuous rehearsal, intermediate windows, and a 70%-certified
+training majority all unable to move the certified number off ~0. Round 1
++ round 2 together FALSIFY spawn-distance curriculum as the route to
+certified competence in either hard-swap or annealed-mixture form. The
+implied competence-vs-approach-distance profile is a cliff: window [1,3]
+≈ 0.7–0.8, [3,6] ≈ 0.3–0.4, [6,10] ≈ 0, certified [4,14] ≈ 0.
+
+For the reconvene — what the evidence now constrains:
+1. NOT forgetting (round 2 removes swaps; unchanged), NOT discovery in the
+   local sense (phase-1 learning is fast and reliable), NOT map visibility
+   for this arm (Blind observes the true obstacle plane in its full
+   state). The failure scales with APPROACH LENGTH itself.
+2. Candidate mechanisms for round 3, for joint prioritisation:
+   (i) coordination horizon — both agents must jointly commit over 2–5×
+   longer trajectories; branch-step entropy vs distance would test it;
+   (ii) value/credit propagation depth at rollouts=16 — the 16-step
+   GAE window is shorter than most certified approaches (4–14 steps per
+   robot plus conflict detours); rollouts 32/64 is a one-line YAML probe
+   and my nominee for cheapest-first;
+   (iii) OPEN(4)/architecture (entity encoder) — least conservative.
+3. Ops note: eval_stage_checkpoints.py (committed) makes any future
+   recipe's certified trajectory a ~2-minute add-on per seed.
+
+GPU: 12 runs + 3 evals ≈ 30 min. Cumulative today ≈ 5.5 h.
