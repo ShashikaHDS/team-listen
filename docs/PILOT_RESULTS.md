@@ -377,3 +377,49 @@ ranking: (a) permanent competence floor — never anneal the training
 mixture below ~30% easy rows, evaluated native-mode (one bank build + one
 probe); (b) warm-start from p1 + floor; (c) entropy schedule. GPU round 4:
 ≈ 25 min, eval-only as ordered.
+
+---
+
+## Addendum 8: round-5 permanent floor + warm start — <0.3 branch; the failure has two layers and only one is fixed
+
+Floor bank `floor_94854c2c` (30/10/10/50 phase1/2/3/certified-train,
+k_train 4096, certified eval pool embedded; preset committed with test).
+Four full-budget runs, ratified config. Warm-start provenance:
+`floor_warm_s0` ← runs/diag/curr_ckpt_s1_p1.pt and `floor_warm_s1` ←
+curr_ckpt_s2_p1.pt (round-1 phase-1 finals, E[C]=0.695 each, certified
+native ≈ 0.098 at seed time). Certified native (paired_stochastic)
+E[C] at 25/50/75/final (argmax alongside in the log):
+
+| Run | 25% | 50% | 75% | final |
+|---|---|---|---|---|
+| warm_s0 | 0.031 | 0.017 | 0.013 | 0.010 |
+| warm_s1 | 0.038 | 0.006 | 0.007 | 0.004 |
+| scratch_s0 | 0.006 | 0.002 | 0.002 | 0.002 |
+| scratch_s1 | 0.002 | 0.000 | 0.000 | 0.001 |
+
+**Decision rule: < 0.3 everywhere — stopped; OPEN(4) reconvene.** The
+erosion check answers YES emphatically: from an informed 0.098 start,
+certified competence is at 0.03–0.04 within 25% of budget and ~0.01 by the
+end, WITH the floor supplying completions throughout. Scratch runs never
+rise. The predicted "rise by 25%" tell did not occur; its inverse did.
+
+**Critic pass on the best final checkpoint (warm_s0):** the floor-trained
+critic is now INFORMED — both_adjacent 4.96 (highest, 2.3× parked_near
+2.17), both_latched 3.45, one_latched_partner_near 3.99, correct ordering
+throughout. Compare Addendum 7's flat ~0.5–0.9 for certified-only
+training.
+
+**Synthesis — the failure has two layers:**
+1. *Critic layer (rarity trap)* — real, and SOLVED by the floor: constant
+   easy-row completions keep the payoff priced.
+2. *Policy layer (representation interference)* — unsolved and now
+   isolated: with an informed critic and abundant reward signal, gradient
+   pressure from easy-row behaviour still reshapes the shared 512-256-128
+   flat-MLP features away from long-approach competence. Every
+   training-distribution and optimiser lever has now been tried against
+   this layer; per the pre-agreed rule the OPEN(4) architecture rung
+   (DeepSets entity encoder over the padded slots — spec 1.5's month-4
+   default, harness/models.py) is the reconvene topic, with the
+   accumulated evidence strongly motivating pulling it forward.
+
+GPU: 4 runs + 4 eval boots + 1 critic boot ≈ 45 min.
