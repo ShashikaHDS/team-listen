@@ -311,3 +311,69 @@ reconvene, cheapest first: (a) value-function inspection at
 mouth-adjacent states (does the critic ever see the +7?); (b) targeted
 exploration at the decisive step; (c) the OPEN(4) encoder. GPU: round 3
 ≈ 65 min incl. diagnostics.
+
+---
+
+## Addendum 7: round-4 eval-mode + critic studies — measurement bias quantified; parked attractor is critic-blindness
+
+**Study A — eval-mode recalibration.** New `paired_stochastic` rollout mode
+(fbf62ea): per-(base scenario, agent, step) uniforms tiled across a plan's
+lanes, so identical logits give bit-identical samples and the spec-4.3
+blind machine check SURVIVES sampling-mode eval — admissibility proven on
+the CPU stand-in before use (blind lanes bitwise-equal under sampling;
+different seeds genuinely sample; language-sensitive divergence still
+caught; tests committed). 5 checkpoints × 4 banks × 2 modes, 512 rows.
+Headline rows (E[C], argmax → paired_stochastic):
+
+| Checkpoint | phase1 | phase2 | phase3 | certified |
+|---|---|---|---|---|
+| p1-competent | 0.30 → **0.58** | 0.08 → **0.30** | 0.010 → **0.14** | 0.006 → **0.098** |
+| flat-16 (original) | 0.016 → 0.027 | — | — | 0.002 → 0.004 |
+| flat-32 (round 3) | 0.010 → 0.033 | — | — | 0.000 → 0.002 |
+| flat-64 (round 3) | 0.031 → 0.059 | — | — | 0.000 → 0.012 |
+| mixture-S4 | 0.065 → 0.066 | — | — | 0.000 → 0.002 |
+
+SAY IT LOUDLY, per the order: **argmax materially understated competence
+everywhere** — up to 16× on the certified bank for the competent policy
+(0.006 → 0.098). Rounds 1–3's certified numbers were all biased LOW, and
+round-1/2 "transfer ≈ 0" should be read as "transfer ≈ 10% native-mode
+from the p1 policy". HOWEVER: no decision-rule branch changes — the best
+certified native number is 0.098, far below both the 0.9 gate and the 0.3
+report line, and certified-TRAINED checkpoints stay ≤ 1.2% native. The
+competence gap is real; its measurement was biased. All future evals run
+paired_stochastic alongside argmax.
+
+**Study B — critic inspection** (scripts/critic_inspection.py, committed;
+values inverse-transformed through each checkpoint's trained
+RunningStandardScaler, so REAL return units; yardstick: both_adjacent
+completing next step ≈ +10.9, parking ≈ −1):
+
+| Family | p4 (cert-trained) | flat-16 | p1-competent |
+|---|---|---|---|
+| early_far | 0.77 | 0.88 | 3.35 |
+| both_adjacent | 0.92 (n=3) | 0.50 (n=14) | 1.58 (n=16) |
+| parked_near | 0.67 | 0.70 | 2.94 |
+| one_latched_partner_near | 0.79 | 0.50 | 3.18 |
+| one_latched_partner_far | 0.48 | 0.55 | 3.17 |
+| both_latched | 0.63 | 0.51 | **4.18** |
+
+**Verdict: CRITIC-BLINDNESS.** The certified-trained critics are flat
+(~0.5–0.9) across every family — both_adjacent is priced like parked_near,
+and even both_latched states that JUST collected the payoff carry no
+premium. The p1-competent critic is informed (both_latched highest). Per
+the round-4 dichotomy this puts the parked attractor in EXPLORATION-FIX
+territory, not architecture territory. (Caveat recorded: both_adjacent
+has tiny visit counts (3–16) precisely because the policies avoid it —
+itself evidence.)
+
+**Synthesis for the joint decision.** The mechanism is a self-reinforcing
+rarity trap: completions too rare on certified → the critic never encodes
+the payoff → no policy gradient toward completing → completions stay rare.
+Phase-1 training breaks the loop by making the event common — and the
+eval-mode study shows that skill is worth ~10% certified natively — but
+CONTINUED training on rare-completion distributions actively erodes it
+(p1 0.098 → p4 ≤0.002 native). Candidate round-5 recipes, for joint
+ranking: (a) permanent competence floor — never anneal the training
+mixture below ~30% easy rows, evaluated native-mode (one bank build + one
+probe); (b) warm-start from p1 + floor; (c) entropy schedule. GPU round 4:
+≈ 25 min, eval-only as ordered.
