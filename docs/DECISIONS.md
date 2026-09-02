@@ -2,6 +2,38 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-02 - Round 4: argmax bias ratified into the protocol; rarity trap confirmed; round 5 = floor + warm-start
+
+Study A: paired_stochastic eval (admissibility proven: blind lanes stay
+bit-exact under sampling) shows argmax understated competence up to 16x;
+RATIFIED: paired_stochastic is the PRIMARY evaluation mode from now on,
+argmax reported alongside (spec 4.3 amendment, pre-OSF, disclosed; the
+blind machine check is unaffected). Rounds 1-3 certified numbers were
+biased low but no decision branch flips (best certified native 0.098).
+This finding is paper material twice over: it mirrors the rendezvous
+paper's deterministic-execution result in a new setting, and it is
+exactly the kind of eval-protocol artifact the audit paper warns about.
+
+Study B: certified-trained critics are FLAT across state families (a
+just-completed both_latched state carries no premium) while the
+p1-competent critic is informed - the parked attractor is
+CRITIC-BLINDNESS in a self-reinforcing rarity trap: rare completions ->
+uninformed critic -> no gradient toward completing -> rare completions.
+Continued rare-completion training actively erodes competence
+(p1 0.098 -> p4 0.002 native).
+
+ROUND 5 (recipes ranked jointly, (b) primary with (a) as control):
+one PERMANENT-FLOOR mixture bank, fixed composition 30% phase1 /
+10% phase2 / 10% phase3 / 50% certified-train, NO annealing, no stages.
+(b) 2 seeds WARM-STARTED from p1-competent checkpoints (pretraining,
+disclosed) + (a) 2 seeds from scratch on the same bank; full budget;
+native-mode certified eval trajectories. Gate: certified native E[C] >=
+0.9 -> campaign with this recipe; 0.3-0.9 -> report (tune floor/budget);
+< 0.3 -> reconvene on OPEN(4) architecture. Rationale: the floor keeps
+the completion event common enough to keep the critic informed (the
+erosion finding makes it PERMANENT), and warm-starting seeds the loop
+with an informed critic plus a skill already worth ~10% certified.
+
 ## 2026-09-02 - Round 3 falsifies GAE depth; parked attractor is the question; eval-mode sensitivity must be resolved FIRST
 
 Round 3 (addendum 6): rollouts {32, 64} move certified E[C] by nothing -
