@@ -58,6 +58,10 @@ STAGES = [
 K_TRAIN = 4096
 STAMP = [1, 10]                 # widest source near-window (loader gate)
 
+#: Round-5 permanent-floor preset (DECISIONS.md): one bank, no annealing —
+#: a fixed 30% phase1 competence floor under 50% certified-train rows.
+STAGES_FLOOR = [("floor", (30, 10, 10, 50))]
+
 
 def _find_one(pattern):
     hits = sorted(glob.glob(pattern))
@@ -98,6 +102,7 @@ def main(argv=None):
     ap.add_argument("--certified",
                     default="data/scenario_bank_RoleBinding_68d025a618cf.pt")
     ap.add_argument("--k-train", type=int, default=K_TRAIN, dest="k_train")
+    ap.add_argument("--preset", choices=("anneal", "floor"), default="anneal")
     args = ap.parse_args(argv)
     k_train = int(args.k_train)
 
@@ -117,7 +122,8 @@ def main(argv=None):
     cert = srcs["certified"]
     cert_eval = (cert.split == 1).nonzero(as_tuple=False).reshape(-1)
 
-    for si, (tag, ratios) in enumerate(STAGES):
+    stages = STAGES if args.preset == "anneal" else STAGES_FLOOR
+    for si, (tag, ratios) in enumerate(stages):
         counts = _alloc(k_train, ratios)
         rows = []                                     # (source, row) picks
         for src_i, (name, n) in enumerate(zip(names, counts)):

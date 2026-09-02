@@ -188,6 +188,21 @@ def test_mixture_banks_composition_determinism_stamp_loader():
             assert len(files) == 2 and files[0] == files[1], \
                 "rebuild not SHA-identical for %s: %r" % (tag, files)
 
+        # round-5 floor preset: same guarantees for the single floor bank
+        out3 = os.path.join(tmp, "o3")
+        rc = bmx.main(["--src-dir", tmp, "--certified", cert_path,
+                       "--out-dir", out3, "--k-train", "16",
+                       "--preset", "floor"])
+        assert rc == 0
+        fpt = [f for f in os.listdir(out3) if f.endswith(".pt")]
+        assert len(fpt) == 1 and "_floor_" in fpt[0]
+        fb = scenario_bank.load_bank(os.path.join(out3, fpt[0]))
+        fmix = fb.meta["mixture"]
+        assert fmix["stage"] == "floor"
+        assert list(fmix["train_counts"].values()) == bmx._alloc(
+            16, bmx.STAGES_FLOOR[0][1])
+        assert fb.meta["curriculum_near_window"] == bmx.STAMP
+
         for tag, ratios in bmx.STAGES:
             path = os.path.join(out1, shas[tag][0])
             bank = scenario_bank.load_bank(path)      # production gate
