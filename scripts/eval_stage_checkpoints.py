@@ -26,6 +26,9 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("checkpoints", nargs="+")
 parser.add_argument("--task", default="Isaac-TeamListen-RoleBinding-Blind-Direct-v0")
 parser.add_argument("--n_base", type=int, default=1024)
+parser.add_argument("--modes", default="argmax",
+                    help="comma list from {argmax, paired_stochastic} "
+                         "(round-4 eval-mode study)")
 
 from isaaclab.app import AppLauncher  # noqa: E402
 
@@ -78,16 +81,20 @@ def policy(obs):
     return out
 
 
+modes = [m.strip() for m in args.modes.split(",") if m.strip()]
 for ck in args.checkpoints:
     runner.agent.load(ck)
     for m in policies.values():
         m.eval()
-    rec = ro.run_lanes(env, policy, plan, mode="argmax")
-    n_latched = (rec.latch_time >= 0).sum(dim=1)
-    ec = rec.completed.float().mean()
-    single = (n_latched == 1).float().mean()
-    print("STAGE_EVAL ckpt=%s E_C=%.4f single_latch=%.4f n=%d"
-          % (ck, ec, single, args.n_base), flush=True)
+    for mode in modes:
+        gen = torch.Generator().manual_seed(9917) \
+            if mode != "argmax" else None
+        rec = ro.run_lanes(env, policy, plan, mode=mode, generator=gen)
+        n_latched = (rec.latch_time >= 0).sum(dim=1)
+        ec = rec.completed.float().mean()
+        single = (n_latched == 1).float().mean()
+        print("STAGE_EVAL ckpt=%s mode=%s E_C=%.4f single_latch=%.4f n=%d"
+              % (ck, mode, ec, single, args.n_base), flush=True)
 
 env.close()
 app.close()

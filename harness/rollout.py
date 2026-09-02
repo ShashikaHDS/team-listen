@@ -92,7 +92,7 @@ N_LANES_FULL = 5
 
 #: Action-selection modes.  Numerator and denominator of any given CSI
 #: contrast must use the SAME mode (spec 6.2).
-MODES = ("argmax", "stochastic")
+MODES = ("argmax", "stochastic", "paired_stochastic")
 
 
 # ---------------------------------------------------------------------------
@@ -259,7 +259,7 @@ def make_five_lane_plan(base_sids, factual_classes=None, pair_classes=None,
 # Action selection (spec 4.3)
 # ---------------------------------------------------------------------------
 
-def select_actions(logits, mode, generator=None):
+def select_actions(logits, mode, generator=None, paired_u=None):
     """Actions from Categorical logits (..., N_ACTIONS).
 
     ``argmax``: deterministic argmax (ties -> lowest index, i.e. 0 = up;
@@ -275,6 +275,18 @@ def select_actions(logits, mode, generator=None):
         flat = probs.reshape(-1, probs.shape[-1])
         picks = torch.multinomial(flat, 1, generator=generator)
         return picks.reshape(probs.shape[:-1])
+    if mode == "paired_stochastic":
+        # Inverse-CDF sampling from EXTERNAL uniforms (round-4 eval-mode
+        # study): the caller draws one uniform per (base scenario, agent)
+        # and TILES it across a plan's lanes, so identical logits in two
+        # lanes yield bit-identical samples and the blind-arm paired
+        # machine check (spec 4.3) survives sampling-mode eval.
+        if paired_u is None:
+            raise ValueError("paired_stochastic needs paired_u")
+        probs = torch.softmax(logits.float(), dim=-1)
+        cum = probs.cumsum(dim=-1)
+        picks = (paired_u.unsqueeze(-1) >= cum).sum(dim=-1)
+        return picks.clamp_(max=probs.shape[-1] - 1)
     raise ValueError("mode %r not in %r" % (mode, MODES))
 
 
@@ -625,7 +637,14 @@ def run_lanes(env, policy, plan=None, mode="argmax", generator=None,
             logit_d = policy(obs)
             lg = torch.stack([logit_d[a].float() for a in agents], dim=1)
             assert lg.shape == (E, N, grid_core.N_ACTIONS), lg.shape
-            chosen = select_actions(lg, mode, generator).long()   # (E, N)
+            if mode == "paired_stochastic":
+                n_u = plan.n_base if plan is not None else E
+                u = torch.rand((n_u, N), generator=generator)
+                if plan is not None:
+                    u = u.repeat(plan.n_lanes, 1)
+                chosen = select_actions(lg, mode, paired_u=u.to(dev)).long()
+            else:
+                chosen = select_actions(lg, mode, generator).long()  # (E, N)
             env._pre_physics_step(
                 {a: chosen[:, i] for i, a in enumerate(agents)})
             env.episode_length_buf += 1                # BEFORE dones, spec 1.4
@@ -696,7 +715,8 @@ def run_lanes(env, policy, plan=None, mode="argmax", generator=None,
             env.force_scenarios(None)
             env.force_slip_stream(None)
 
-    if plan is not None and auto_assert_blind and mode == "argmax" \
+    if plan is not None and auto_assert_blind \
+            and mode in ("argmax", "paired_stochastic") \
             and float(getattr(env.cfg, "lang_gain", 1.0)) == 0.0:
         # spec 4.3: every blind-arm pair must be bit-identical; L4 shares
         # L0's physics too (blank == zero == blind slice).

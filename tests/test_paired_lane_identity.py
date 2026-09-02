@@ -292,6 +292,53 @@ def test_blind_paired_lanes_bit_identical():
     assert env._forced_scenarios is None and env._forced_slip_stream is None
 
 
+def test_paired_stochastic_blind_lanes_bit_identical():
+    """Round-4 eval-mode study admissibility gate: in paired_stochastic
+    mode the two lanes of each pair share per-(base, agent, step) uniforms,
+    so a blind arm's lanes must stay BIT-IDENTICAL under sampling -- the
+    spec 4.3 machine check survives native-mode eval.  run_lanes auto-runs
+    the check for blind arms in this mode; explicit comparisons repeated
+    here."""
+    env = _make_env("Blind", 2 * N_BASE)
+    plan = ro.make_paired_plan(torch.arange(N_BASE))
+    gen = torch.Generator().manual_seed(9917)
+    rec = ro.run_lanes(env, GreedyPolicy(env), plan,
+                       mode="paired_stochastic", generator=gen)
+    for name in ro.RolloutRecord.IDENTITY_FIELDS:
+        t = getattr(rec, name)
+        if name in ("positions", "intended", "executed", "margins", "active"):
+            t = t.transpose(0, 1).contiguous()
+        v = plan.view(t)
+        assert torch.equal(v[0], v[1]), name
+    # and the draws genuinely sample (not argmax): same policy, same plan,
+    # different generator seed must give a different trajectory somewhere
+    gen2 = torch.Generator().manual_seed(31337)
+    rec2 = ro.run_lanes(env, GreedyPolicy(env), plan,
+                        mode="paired_stochastic", generator=gen2)
+    assert not torch.equal(rec.executed, rec2.executed), \
+        "paired_stochastic produced identical actions under different seeds"
+
+
+def test_paired_stochastic_sensitive_pair_caught():
+    """A language-sensitive policy must still be CAUGHT by the machine
+    check under paired_stochastic (identical uniforms make any divergence
+    attributable to the logits, i.e. to the language channel)."""
+    env = _make_env("SymbolPO", 2 * N_BASE)
+    plan = ro.make_paired_plan(torch.arange(N_BASE))
+    policy = LinearPolicy(L.OBS_DIM, env.cfg.possible_agents, seed=123,
+                          lang_weight=50.0)
+    gen = torch.Generator().manual_seed(9917)
+    rec = ro.run_lanes(env, policy, plan, mode="paired_stochastic",
+                       generator=gen)
+    try:
+        ro.assert_paired_lane_identity(rec, plan)
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError(
+            "language-sensitive lanes were not caught in paired_stochastic")
+
+
 def test_language_sensitive_pair_diverges_and_is_caught():
     env = _make_env("SymbolPO", 2 * N_BASE)
     plan = ro.make_paired_plan(torch.arange(N_BASE))
