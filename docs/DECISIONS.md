@@ -2,6 +2,40 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-02 - Round 3 falsifies GAE depth; parked attractor is the question; eval-mode sensitivity must be resolved FIRST
+
+Round 3 (addendum 6): rollouts {32, 64} move certified E[C] by nothing -
+mechanism (ii) falsified. The entropy diagnostic (estimator bug caught
+and fixed by the > ln 5 sanity tripwire - good conduct, recorded)
+reframes the failure: policies are CONFIDENTLY committed to
+non-completing behaviour (near-deterministic parked equilibrium), not
+dithering - a stable SGD attractor despite the audited >= 8.58
+compliance margin. Optimality is not gradient-reachability: the joint
+improvement path requires both agents to change together, and at low
+single-latch rates the second agent's marginal gradient toward latching
+is tiny.
+
+CRITICAL FLAG adopted as the immediate priority: the p1-competent
+checkpoint scores 0.303 under argmax vs ~0.69 under training-time
+stochastic sampling. This mirrors the rendezvous paper's
+deterministic-execution finding (argmax + symmetric ties collapses
+multi-robot competence). Spec 4.3 chose argmax for paired determinism,
+but paired determinism does NOT require argmax: PAIRED-STOCHASTIC
+evaluation (an explicit per-lane-pair policy-sampling stream, identical
+across the two lanes) preserves the bit-exact blind-arm machine check
+while evaluating the policy in its native mode. No confirmatory
+evaluation has run and OSF is not yet submitted, so amending the eval
+mode now is legitimate and disclosed here.
+
+ROUND 4 ORDER: (A) eval-mode study, eval-only, all key existing
+checkpoints x {argmax, paired-stochastic} x {phase banks, certified} -
+recalibrates every past certified number before any new training; (B)
+value-function inspection at mouth-adjacent states (does the critic
+price the +7, i.e. is the attractor a critic-blindness or an exploration
+problem); (C) reconvene on the training fix (targeted exploration vs
+OPEN(4) encoder) with A+B in hand. No training probes until A and B
+report.
+
 ## 2026-09-02 - Round 2 falsifies spawn-distance curriculum; round 3 targets credit-propagation depth
 
 Round-2 mixtures (PILOT_RESULTS addendum 5): certified E[C] ~ 0 at every
