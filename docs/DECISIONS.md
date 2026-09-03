@@ -2,6 +2,26 @@
 
 Running log of design decisions made after M1_SPEC.md was frozen. Newest first.
 
+## 2026-09-02 - Round 5: floor solves the critic layer, not the policy layer; OPEN(4) encoder pulled forward
+
+Round 5 (addendum 8): permanent floor + warm start lands < 0.3
+everywhere. The floor PROVABLY fixes the critic layer (floor-trained
+critic prices both_adjacent 4.96, correct ordering throughout - compare
+addendum 7's flat critics), yet certified competence still erodes from
+an informed 0.098 start to ~0.01. Failure isolated to the POLICY layer:
+representation interference in the shared 512-256-128 flat MLP - easy-row
+gradients reshape shared features away from long-approach competence
+even with an informed critic and abundant reward. Training-distribution
+and optimiser levers are exhausted (LR, GAE depth, curriculum x2, floor,
+warm start - all falsified for this layer).
+
+DECISION: pull OPEN(4) forward - the DeepSets entity encoder over the
+padded slots (spec 1.5's month-4 default, harness/models.py, not yet
+built). Implementation on the dev side (CPU-testable); probe on the 5090
+when it next powers on: encoder x {floor bank warm-started, flat
+certified} x 2 seeds. The 5090 is OFF between rounds (user-managed
+power); work orders queue in git per the standing discipline.
+
 ## 2026-09-02 - Round 4: argmax bias ratified into the protocol; rarity trap confirmed; round 5 = floor + warm-start
 
 Study A: paired_stochastic eval (admissibility proven: blind lanes stay
